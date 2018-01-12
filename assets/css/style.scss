@@ -1,66 +1,66 @@
 html, body {
-	background:#161616;
-	border:0;
-	color:#ccc;
-	font-family:'Open Sans', Arial, sans-serif;
-	margin:0;
-	padding:0;
-	width:100%;
+	background: #161616;
+	border: 0;
+	color: #ccc;
+	font-family: 'Open Sans', Arial, sans-serif;
+	margin: 0;
+	padding: 0;
+	width: 100%;
 }
 a {
-	color:#28b0d2;
+	color: #28b0d2;
 }
 a img {
-	border:none;
+	border: none;
 }
 #canvas {
-	clear:both;
-	display:block;
-	margin:20px auto;
+	clear: both;
+	display: block;
+	margin: 20px auto;
 }
 .container {
-	max-width:600px;
-	margin:20px auto;
+	max-width: 600px;
+	margin: 20px auto;
 }
 .logo {
-	display:block;
-	float:left;
+	display: block;
+	float: left;
 }
 .controls {
-	float:right;
-	font-size:16px;
-	height:16px;
-	line-height:16px;
-	padding:28px 0px 16px 16px;
-	width:184px; /* 200-16 */
+	float: right;
+	font-size: 16px;
+	height: 16px;
+	line-height: 16px;
+	padding: 28px 0px 16px 16px;
+	width: 184px; /* 200-16 */
 }
 select {
-	margin:0px 4px;
+	margin: 0px 4px;
 }
 .error {
-	clear:both;
+	clear: both;
 }
 
 .thumb {
-	display:block;
-	float:left;
-	height:auto;
-	margin:2%;
-	width:21%;
+	display: block;
+	float: left;
+	height: auto;
+	margin: 2%;
+	width: 21%;
 }
 
-@media screen and (max-width:500px) {
+@media screen and (max-width: 500px) {
 	.container {
-		margin:10px auto;
+		margin: 10px auto;
 	}
 	.logo {
-		float:none;
-		margin:0 auto;
-		text-align:center;
+		float: none;
+		margin: 0 auto;
+		text-align: center;
 	}
 	.controls {
-		float:none;
-		margin:0 auto;
-		padding:0px;
+		float: none;
+		margin: 0 auto;
+		padding: 0px;
 	}
 }
