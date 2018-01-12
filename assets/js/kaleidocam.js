@@ -1,9 +1,5 @@
 $(function() {
 
-	//cross browser compatibility
-	window.URL = window.URL || window.webkitURL;
-	navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
-
 	var video = document.getElementById('video');
 	var canvas = document.getElementById('canvas');
 	var ctx = canvas.getContext('2d');
@@ -22,54 +18,31 @@ $(function() {
 	// start video stream
 	function start() {
 
-		if (navigator.getUserMedia) {
-			//supported
-			navigator.getUserMedia({video:true}, success, fail);
+		// hide button
+		$('#start').hide();
+
+		var constraints = {
+			video: {
+				'facingMode': 'environment'
+			}
+		};
+
+		if (navigator.mediaDevices.getUserMedia) {
+			navigator.mediaDevices.getUserMedia(constraints).then(success).catch(fail);
 		}
 		else {
-			//not supported
-			//alert('Sorry, you browser is not currently supported.');
-			$('#top').append('<div class="error">').append('<p>Sorry, your browser is not currently supported.</p>').append('<ul>').append('<li>For desktop, try the latest version of <a href="https://www.google.com/intl/en/chrome/browser/">Google Chrome</a>.</li>').append('<li>For Android mobile devices, try <a href="https://play.google.com/store/apps/details?id=com.opera.browser.classic">Opera Mobile 12</a>.</li>').append('</ul>').append('</div>');
-			$('.controls').hide();
-			/*
-			add more instructions for browser support:
-			firefox: go to about:config and make sure media.navigator.enabled is set to true
-			ie and safari: shit out of luck
-			iOS devices: ?
-			*/
+			// error message
+			$('.main .container').append('<p class="error">Sorry, your browser is not supported. Try using the latest version of Chrome, Firefox, Safari, or Edge.</p>');
 		}
-
 	}
 
-	function success(raw) {
-
-		$('#fferror').remove();
-
-		var stream;
-
-		//chrome
-		if (navigator.webkitGetUserMedia) {
-			stream = window.URL.createObjectURL(raw);
-		}
-		//everything else
-		else {
-			stream = raw;
-		}
-
-		//firefox
-		if (video.mozSrcObject !== undefined) {
-			video.mozSrcObject = stream;
-		}
-		//everything else
-		else {
-			video.src = stream;
-		}
-
+	function success(stream) {
+		video.srcObject = stream;
 	}
 
-	function fail() {
-		$('#top').append('<p class="error">Sorry, you must allow access to your camera to play!</p>');
-		$('.controls').hide();
+	function fail(error) {
+		// error message
+		$('.main .container').append('<p class="error">Camera access is required. Please check your device and browser permissions.</p>');
 	}
 
 	var rotate = document.getElementById('rotate');
@@ -103,6 +76,8 @@ $(function() {
 	//set video dimensions
 	//fit in window while keeping the same aspect ratio
 	$('#video').on('loadeddata', function() {
+
+		$('.instructions, .controls').show();
 
 		video.play();
 
