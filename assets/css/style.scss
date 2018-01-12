@@ -1,42 +1,73 @@
+
+$base-size: 16px;
+
+$blue: #38a1d1;
+$blue-grey: #2e3c61;
+
 html, body {
 	background: #161616;
 	border: 0;
 	color: #ccc;
 	font-family: 'Open Sans', Arial, sans-serif;
+	font-size: $base-size;
+	line-height: 1.5;
 	margin: 0;
 	padding: 0;
 	width: 100%;
 }
+
+img {
+	height: auto;
+	max-width: 100%;
+
+	a & {
+		border: none;
+	}
+}
+
 a {
-	color: #28b0d2;
+	color: $blue;
 }
-a img {
-	border: none;
+
+.container {
+	box-sizing: border-box;
+	max-width: 100%;
+	margin: 0 auto;
+	padding: 0 1em;
+	width: 600px;
 }
+
+.header {
+
+	.logo {
+		display: block;
+		height: 45px;
+		margin: 0.5em 0;
+		width: 225px;
+	}
+}
+
+.main {
+	text-align: center;
+}
+
+.footer {
+	background: rgba($blue-grey, 0.95);
+	bottom: 0;
+	color: #fff;
+	left: 0;
+	padding: 1em;
+	position: fixed;
+	right: 0;
+	text-align: center;
+}
+
 #canvas {
 	clear: both;
 	display: block;
 	margin: 20px auto;
 }
-.container {
-	max-width: 600px;
-	margin: 20px auto;
-}
-.logo {
-	display: block;
-	float: left;
-}
-.controls {
-	float: right;
-	font-size: 16px;
-	height: 16px;
-	line-height: 16px;
-	padding: 28px 0px 16px 16px;
-	width: 184px; /* 200-16 */
-}
-select {
-	margin: 0px 4px;
-}
+
 .error {
 	clear: both;
 }
@@ -49,18 +80,44 @@ select {
 	width: 21%;
 }
 
+/**
+ * Buttons and Form Controls
+ */
+
+%button {
+	background: #ccc;
+	border: 0;
+	border-radius: 2px;
+	box-sizing: border-box;
+	cursor: pointer;
+	display: inline-block;
+	font-size: 1.5rem;
+	max-width: 100%;
+	min-width: 6em;
+	padding: 0.25em 1em;
+	text-align: center;
+	transition: background 200ms;
+
+	&:focus, &:hover {
+		background: $blue;
+	}
+}
+
+button {
+	@extend %button;
+}
+
+select {
+	margin: 0px 4px;
+}
+
 @media screen and (max-width: 500px) {
-	.container {
-		margin: 10px auto;
-	}
-	.logo {
-		float: none;
-		margin: 0 auto;
-		text-align: center;
-	}
-	.controls {
-		float: none;
-		margin: 0 auto;
-		padding: 0px;
+
+	.header {
+
+		.logo {
+			height: 30px;
+			width: 150px;
+		}
 	}
 }

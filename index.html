@@ -14,11 +14,29 @@
 
 <body>
 
-	<div class="container" id="top">
+	<header class="header">
+		<div class="container">
+			<a class="logo" href="/"><img src="./assets/img/kaleidocamera.png" alt="KaleidoCamera" /></a>
+		</div>
+	</header>
 
-		<a class="logo" href="/"><img src="./assets/img/kaleidocamera.png" alt="KaleidoCamera" /></a>
+	<div class="main">
 
-		<div class="controls">
+		<canvas id="canvas"></canvas>
+		<canvas id="vidcanvas" style="display:none;"></canvas>
+		<video id="video" autoplay="true" style="display:none;"></video>
+
+		<div class="container">
+			<noscript><p class="error">Sorry, this requires JavaScript to be enabled.</p></noscript>
+			<button id="start">Start</button>
+			<p>Tap/click above to take a picture. Save the ones you like to your device!</p>
+			<div id="pictures"></div>
+		</div>
+
+	</div><!-- .main -->
+
+	<footer class="footer">
+		<div class="container">
 
 			<select id="sides">
 				<option value="6" selected>6</option>
@@ -37,20 +55,8 @@
 			<!--<input type="checkbox" id="reverse" checked /><label for="reverse">Reverse?</label>-->
 
 		</div>
+	</footer>
 
-		<noscript><p class="error">Sorry, this requires JavaScript to be enabled.</p></noscript>
-		<p class="error" id="fferror">If you're using Firefox, you may need to go to <strong>about:config</strong> and set <strong>media.navigator.enabled</strong> or <strong>media.peerconnection.enabled</strong> to true.</p>
-
-	</div>
-
-	<canvas id="canvas"></canvas>
-	<canvas id="vidcanvas" style="display:none;"></canvas>
-	<video id="video" autoplay="true" style="display:none;"></video>
-
-	<div class="container">
-		<p>Tap/click above to take a picture. Save the ones you like to your device!</p>
-		<div id="pictures"></div>
-	</div>
 
 	<!-- google analytics -->
 	<script>

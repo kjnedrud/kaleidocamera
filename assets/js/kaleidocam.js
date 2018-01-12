@@ -16,21 +16,29 @@ $(function() {
 		dpr = window.devicePixelRatio;
 	}
 
-	if (navigator.getUserMedia) {
-		//supported
-		navigator.getUserMedia({video:true}, success, fail);
-	}
-	else {
-		//not supported
-		//alert('Sorry, you browser is not currently supported.');
-		$('#top').append('<div class="error">').append('<p>Sorry, your browser is not currently supported.</p>').append('<ul>').append('<li>For desktop, try the latest version of <a href="https://www.google.com/intl/en/chrome/browser/">Google Chrome</a>.</li>').append('<li>For Android mobile devices, try <a href="https://play.google.com/store/apps/details?id=com.opera.browser.classic">Opera Mobile 12</a>.</li>').append('</ul>').append('</div>');
-		$('.controls').hide();
-		/*
-		add more instructions for browser support:
-		firefox: go to about:config and make sure media.navigator.enabled is set to true
-		ie and safari: shit out of luck
-		iOS devices: ?
-		*/
+	// start button
+	$('#start').on('click', start);
+
+	// start video stream
+	function start() {
+
+		if (navigator.getUserMedia) {
+			//supported
+			navigator.getUserMedia({video:true}, success, fail);
+		}
+		else {
+			//not supported
+			//alert('Sorry, you browser is not currently supported.');
+			$('#top').append('<div class="error">').append('<p>Sorry, your browser is not currently supported.</p>').append('<ul>').append('<li>For desktop, try the latest version of <a href="https://www.google.com/intl/en/chrome/browser/">Google Chrome</a>.</li>').append('<li>For Android mobile devices, try <a href="https://play.google.com/store/apps/details?id=com.opera.browser.classic">Opera Mobile 12</a>.</li>').append('</ul>').append('</div>');
+			$('.controls').hide();
+			/*
+			add more instructions for browser support:
+			firefox: go to about:config and make sure media.navigator.enabled is set to true
+			ie and safari: shit out of luck
+			iOS devices: ?
+			*/
+		}
+
 	}
 
 	function success(raw) {
@@ -67,7 +75,7 @@ $(function() {
 	var rotate = document.getElementById('rotate');
 	var reverse = document.getElementById('reverse');
 
-	//var r = 300; 
+	//var r = 300;
 	var r; //radius - distance from center of polygon to vertex
 
 	//make it fit within the screen
@@ -83,7 +91,7 @@ $(function() {
 	if (dpr > 1) {
 		r = dpr*r;
 	}
-	
+
 	var n = 6; //number of sides
 	var a = 2*Math.PI/n; //inner angle of triangle in radians
 	var h = r*Math.cos(a/2); //height of triangle
@@ -122,7 +130,7 @@ $(function() {
 		//set canvas dimensions
 		/*if (odd) {
 			canvas.width = 2*r;
-		} 
+		}
 		else {
 		*/	canvas.width=2*h;
 		//}
@@ -153,7 +161,7 @@ $(function() {
 				//clear canvas and set new dimensions
 				/*if (odd) {
 					canvas.width = 2*r;
-				} 
+				}
 				else {
 				*/	canvas.width=2*h;
 				//}
@@ -174,7 +182,7 @@ $(function() {
 				ctx.lineTo(b, h);
 				ctx.lineTo(0, h);
 			}*/
-			
+
 			ctx.clip();
 		}
 
@@ -201,7 +209,7 @@ $(function() {
 			vctx.restore();
 
 			//draw kaleidoscope
-			
+
 			ctx.save();
 			//if (reverse.checked) {
 				ctx.translate(canvas.width/2-b/2, 0);
@@ -210,7 +218,7 @@ $(function() {
 				ctx.translate(b/2, h);
 			}*/
 
-			//loop through 
+			//loop through
 			for (var j=0; j<n; j++) {
 
 					//odd
@@ -220,7 +228,7 @@ $(function() {
 						triangleClip();
 						ctx.drawImage(vidcanvas, vidcanvas.width/2-b/2, vidcanvas.height/2-h/2, b, h, 0, 0, b, h);
 						ctx.restore();
-						
+
 					}
 					//even
 					else {
@@ -244,7 +252,7 @@ $(function() {
 			}
 
 		}, 1000/30);
-	
+
 	}); //loadedmetadata
 
 	//save images as png data and display thumbnails with links to full imgs
