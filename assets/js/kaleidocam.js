@@ -18,9 +18,8 @@ $(function() {
 
 	var dpr = window.devicePixelRatio || 1;
 
-	var r = getRadius(); // radius - distance from center of polygon to vertex (also the length of triangle leg)
-
-	var n = $('#sides').val(); // number of sides
+	var r = getRadius(); // circle radius, also polygon apothem (distance from center to midpoint of side)
+	var n = $('#sides').val(); // number of polygon sides
 
 	// triangle dimensions
 	var triangle = getTriangleDimensions(r, n);
@@ -31,14 +30,14 @@ $(function() {
 	var rotation = 0; // rotation in degrees
 
 	// set canvas dimensions
-	srcCanvas.width = r;
-	srcCanvas.height = r;
+	srcCanvas.width = triangle.h;
+	srcCanvas.height = triangle.h;
 	canvas.width = 2 * triangle.h;
 	canvas.height = 2 * triangle.h;
 
 	if (dpr > 1) {
-		$('#canvas').css('width', 2 * r / dpr);
-		$('#canvas').css('height', 2 * r / dpr);
+		$('#canvas').css('width', 2 * triangle.h / dpr);
+		$('#canvas').css('height', 2 * triangle.h / dpr);
 	}
 
 	// show canvas once the dimensions are set
@@ -48,14 +47,17 @@ $(function() {
 	// calculate radius of circle
 	function getRadius() {
 		// make it fit within the screen
-		var winW = $(window).width();
-		var winH = $(window).height();
+		var wOffset = 40;
+		var hOffset = 65 + 20 +20 + 60 + 50;
+		var w = window.innerWidth - wOffset;
+		var h = window.innerHeight - hOffset;
+		var r;
 
-		if (winW > winH) {
-			r = (winH-120) / 2;
+		if (w > h) {
+			r = h / 2;
 		}
 		else {
-			r = (winW/2) - 10;
+			r = w / 2;
 		}
 
 		// adjust for dpr
@@ -71,11 +73,13 @@ $(function() {
 	function getTriangleDimensions(r, n) {
 
 		var a = 2 * Math.PI / n; // inner angle of triangle in radians
-		var h = r * Math.cos(a/2); // height of triangle (also distance from center to middle of polygon side)
-		var b = 2 * r * Math.sin(a/2); // base of triangle (also length of polygon side)
+		var l = r / Math.cos(a/2); // leg of triangle (also polygon radius)
+		var h = l * Math.cos(a/2); // height of triangle (also distance from center to middle of polygon side)
+		var b = 2 * l * Math.sin(a/2); // base of triangle (also length of polygon side)
 
 		return {
 			a: a,
+			l: l,
 			h: h,
 			b: b
 		};
@@ -249,20 +253,22 @@ $(function() {
 		srcCtx.save();
 
 		// translate to set rotation point in center, then translate back
-		srcCtx.translate(r/2, r/2);
+		srcCtx.translate(triangle.h/2, triangle.h/2);
 		srcCtx.rotate(rotation * Math.PI/180); // convert degrees to radians
-		srcCtx.translate(-r/2,-r/2);
+		srcCtx.translate(-triangle.h/2,-triangle.h/2);
 
 		// this works to crop, center image, and rotate around the center
-		var sx = (srcSize.w - srcSize.s) / 2;
-		var sy = (srcSize.h - srcSize.s) / 2;
-		var sw = srcSize.s;
-		var sh = srcSize.s;
-		var dx = 0;
-		var dy = 0;
-		var dw = r;
-		var dh = r;
-		srcCtx.drawImage(source, sx, sy, sw, sh, dx, dy, dw, dh);
+		srcCtx.drawImage(
+			source,
+			(srcSize.w - srcSize.s) / 2,
+			(srcSize.h - srcSize.s) / 2,
+			srcSize.s,
+			srcSize.s,
+			0,
+			0,
+			triangle.h,
+			triangle.h
+		);
 
 		srcCtx.restore();
 	}
@@ -305,10 +311,6 @@ $(function() {
 			// get new values
 			n = numSides;
 			triangle = getTriangleDimensions(r, n);
-			// resize canvas
-			canvas.width = 2 * triangle.h;
-			canvas.height = 2 * triangle.h;
-			circleClip();
 		}
 	});
 

@@ -1,5 +1,6 @@
 
-$base-size: 16px;
+$base-size: 20px;
+$line-height: 1.5;
 
 $blue: #38a1d1;
 $blue-grey: #2e3c61;
@@ -10,7 +11,7 @@ html, body {
 	color: #ccc;
 	font-family: 'Open Sans', Arial, sans-serif;
 	font-size: $base-size;
-	line-height: 1.5;
+	line-height: $line-height;
 	margin: 0;
 	padding: 0;
 	width: 100%;
@@ -47,8 +48,12 @@ a {
 	}
 }
 
+.header, .main, .footer {
+	font-size: 16px;
+}
+
 .header {
-	padding: 0.5em 0;
+	padding: 10px 0;
 
 	.logo {
 		display: block;
@@ -65,8 +70,9 @@ a {
 	background: rgba($blue-grey, 0.95);
 	bottom: 0;
 	color: #fff;
+	height: $base-size * $line-height;
 	left: 0;
-	padding: 1em;
+	padding: 10px;
 	position: fixed;
 	right: 0;
 	text-align: center;
