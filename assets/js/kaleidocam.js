@@ -1,25 +1,116 @@
 $(function() {
 
-	var video = document.getElementById('video');
+	// kaleidoscope is a circle inscribed in a regular polygon with n sides, where each side is the base of an isosceles triangle
+	// every other triangle gets reflected, so n must be even
+
+	// destination canvas and context -  visible canvas that final kaleidoscope is drawn on
 	var canvas = document.getElementById('canvas');
 	var ctx = canvas.getContext('2d');
 
-	var vidcanvas = document.getElementById('vidcanvas');
-	var vctx = vidcanvas.getContext('2d');
+	// source canvas and context - hidden canvas that source is drawn and manipulated on
+	var srcCanvas = document.getElementById('src-canvas');
+	var srcCtx = srcCanvas.getContext('2d');
 
-	var dpr = 1;
-	if(window.devicePixelRatio !== undefined) {
-		dpr = window.devicePixelRatio;
+	// video element to use as source
+	var video = document.getElementById('video');
+	// var video = new Video();
+	var source;
+
+	var dpr = window.devicePixelRatio || 1;
+
+	var r = getRadius(); // radius - distance from center of polygon to vertex (also the length of triangle leg)
+
+	var n = $('#sides').val(); // number of sides
+
+	// triangle dimensions
+	var triangle = getTriangleDimensions(r, n);
+
+	// controls
+	var rotate = document.getElementById('rotate');
+	var reverse = document.getElementById('reverse');
+	var rotation = 0; // rotation in degrees
+
+	// set canvas dimensions
+	srcCanvas.width = r;
+	srcCanvas.height = r;
+	canvas.width = 2 * triangle.h;
+	canvas.height = 2 * triangle.h;
+
+	if (dpr > 1) {
+		$('#canvas').css('width', 2 * r / dpr);
+		$('#canvas').css('height', 2 * r / dpr);
 	}
 
-	// start button
-	$('#start').on('click', start);
+	// show canvas once the dimensions are set
+	$('#canvas').css('opacity', 1);
+
+
+	// calculate radius of circle
+	function getRadius() {
+		// make it fit within the screen
+		var winW = $(window).width();
+		var winH = $(window).height();
+
+		if (winW > winH) {
+			r = (winH-120) / 2;
+		}
+		else {
+			r = (winW/2) - 10;
+		}
+
+		// adjust for dpr
+		if (dpr > 1) {
+			r = dpr * r;
+		}
+
+		return r;
+	}
+
+
+	// given polygon radius and number of sides, calculate and return the dimensions of the isosceles triangle that make up the polygon
+	function getTriangleDimensions(r, n) {
+
+		var a = 2 * Math.PI / n; // inner angle of triangle in radians
+		var h = r * Math.cos(a/2); // height of triangle (also distance from center to middle of polygon side)
+		var b = 2 * r * Math.sin(a/2); // base of triangle (also length of polygon side)
+
+		return {
+			a: a,
+			h: h,
+			b: b
+		};
+	}
+
+
+	// get video (or fallback image) dimensions
+	function getSourceDimensions(source) {
+
+		var w = source.videoWidth || source.width;
+		var h = source.videoHeight || source.height;
+		var s; // short side
+
+		if (w > h) {
+			s = h;
+		}
+		else {
+			s = w;
+		}
+
+		return {
+			w: w,
+			h: h,
+			s: s
+		}
+	}
 
 	// start video stream
 	function start() {
 
 		// hide button
 		$('#start').hide();
+
+		// add loading message
+		$('.circle-wrap .message').append('<p class="loading">Loading...</p>');
 
 		var constraints = {
 			video: {
@@ -28,207 +119,199 @@ $(function() {
 		};
 
 		if (navigator.mediaDevices.getUserMedia) {
-			navigator.mediaDevices.getUserMedia(constraints).then(success).catch(fail);
+			navigator.mediaDevices.getUserMedia(constraints).then(userMediaSuccess).catch(userMediaFail);
 		}
 		else {
 			// error message
-			$('.main .container').append('<p class="error">Sorry, your browser is not supported. Try using the latest version of Chrome, Firefox, Safari, or Edge.</p>');
+			$('.circle-wrap .message').append('<p class="error">Sorry, your browser is not supported. Try using the latest version of Chrome, Firefox, Safari, or Edge.</p>');
 		}
 	}
 
-	function success(stream) {
+
+	// success callback for getUserMedia
+	function userMediaSuccess(stream) {
 		video.srcObject = stream;
 	}
 
-	function fail(error) {
+
+	// error callback for getUserMedia
+	function userMediaFail(error) {
 		// error message
-		$('.main .container').append('<p class="error">Camera access is required. Please check your device and browser permissions.</p>');
+		$('.circle-wrap .message').append('<p class="error">Camera access is required. Please check your device and browser permissions.</p>');
+
+
+		$('#fallback-file').show();
+
+		// fallback image upload
+		var fileInput = document.getElementById('fallback-file');
+		fileInput.onchange = function(e){
+			var file = e.target.files[0];
+			if (file.type.match('image.*')) {
+				var fr = new FileReader();
+				fr.onload = function(e){
+
+					var img = new Image();
+					img.onload = function(e){
+						source = img;
+						sourceLoaded();
+					}
+					img.src = fr.result;
+				};
+				fr.readAsDataURL(file);
+			}
+		}
 	}
 
-	var rotate = document.getElementById('rotate');
-	var reverse = document.getElementById('reverse');
 
-	//var r = 300;
-	var r; //radius - distance from center of polygon to vertex
+	// source video (or fallback image) loaded
+	function sourceLoaded() {
 
-	//make it fit within the screen
-	var winW = $(window).width();
-	var winH = $(window).height();
-	if (winW > winH) {
-		r = (winH-80)/2;
-	}
-	else {
-		r = winW/2-10;
-	}
-
-	if (dpr > 1) {
-		r = dpr*r;
-	}
-
-	var n = 6; //number of sides
-	var a = 2*Math.PI/n; //inner angle of triangle in radians
-	var h = r*Math.cos(a/2); //height of triangle
-	var b = 2*r*Math.sin(a/2); //base of triangle
-	var odd = n%4; //odd number of sides to reflect (half the number of sides)?
-
-	var s = Math.floor(Math.sqrt(b*b+h*h));
-
-	//set video dimensions
-	//fit in window while keeping the same aspect ratio
-	$('#video').on('loadeddata', function() {
-
+		$('.circle-wrap .message').hide().find('loading, .error').remove();
+		$('.circle').css('filter', 'none')
 		$('.instructions, .controls').show();
+		$('.main').css('padding-bottom', $('.controls').outerHeight());
 
-		video.play();
-
-		var vidW = this.videoWidth;
-		var vidH = this.videoHeight;
-		var vs;
-
-		if (vidW > vidH) {
-			vs = vidH;
-		}
-		else {
-			vs = vidW;
-		}
-
-		/*
-		console.log('winW:'+winW);
-		console.log('winH:'+winH);
-		console.log('r:'+r);
-		console.log('h:'+h);
-		console.log('b:'+b);
-		console.log('vs:'+vs);
-		console.log('s:'+s);
-		*/
-
-		//set canvas dimensions
-		/*if (odd) {
-			canvas.width = 2*r;
-		}
-		else {
-		*/	canvas.width=2*h;
-		//}
-		canvas.height = 2*h;
-
-		if (dpr > 1) {
-			$('#canvas').css('width',2*h/dpr);
-			$('#canvas').css('height',2*h/dpr);
-		}
-
-		//set videcanvas dimensions
-		vidcanvas.width = s;
-		vidcanvas.height = s;
+		var srcSize = getSourceDimensions(source);
 
 		circleClip();
 
-		//change the number of sides
-		$('#sides').change(function() {
-			var sideSelect = $(':selected','#sides').val();
-			//number of sides - must be even and greater than 4
-			if (!(sideSelect%2) && sideSelect >= 6) {
-				//set new values
-				n = sideSelect;
-				a = 2*Math.PI/n;
-				h = r*Math.cos(a/2);
-				b = 2*r*Math.sin(a/2);
-				odd = n%4;
-				//clear canvas and set new dimensions
-				/*if (odd) {
-					canvas.width = 2*r;
-				}
-				else {
-				*/	canvas.width=2*h;
-				//}
-				canvas.height = 2*h;
-				circleClip();
-			}
-		});
-
-		function triangleClip() {
-			ctx.beginPath();
-			//if (reverse.checked) {
-				ctx.moveTo(0, 0);
-				ctx.lineTo(b, 0);
-				ctx.lineTo(b/2, h);
-			/*}
-			else {
-				ctx.moveTo(b/2, 0);
-				ctx.lineTo(b, h);
-				ctx.lineTo(0, h);
-			}*/
-
-			ctx.clip();
-		}
-
-		//mask the canvas with a circle
-		function circleClip() {
-
-			ctx.beginPath();
-			ctx.arc(canvas.width/2, canvas.height/2, h, 2*Math.PI, 0);
-			ctx.clip();
-		}
-
-
-		var i = 0;
-
-		//send video frames to canvas
+		// todo: change to requestAnimationFrame
+		// draw video frames on source canvas
 		setInterval(function() {
 
-			//draw video onto video canvas and rotate
-			vctx.save();
-			vctx.translate(s/2, s/2);
-			vctx.rotate(Math.PI*i/180);
-			vctx.translate(0,0);
-			vctx.drawImage(video, vidW/2-vs/2, vidH/2-vs/2, vs, vs, -s/2, -s/2, s, s);
-			vctx.restore();
+			// draw source
+			drawSource();
 
-			//draw kaleidoscope
+			// draw kaleidoscope
+			drawKaleidoscope();
 
-			ctx.save();
-			//if (reverse.checked) {
-				ctx.translate(canvas.width/2-b/2, 0);
-			/*}
-			else {
-				ctx.translate(b/2, h);
-			}*/
-
-			//loop through
-			for (var j=0; j<n; j++) {
-
-					//odd
-					if (j%2) {
-						//ctx.scale(1, -1);
-						ctx.save();
-						triangleClip();
-						ctx.drawImage(vidcanvas, vidcanvas.width/2-b/2, vidcanvas.height/2-h/2, b, h, 0, 0, b, h);
-						ctx.restore();
-
-					}
-					//even
-					else {
-						ctx.save();
-						ctx.translate(b, 0);
-						ctx.scale(-1, 1);
-						triangleClip();
-						ctx.drawImage(vidcanvas, vidcanvas.width/2-b/2, vidcanvas.height/2-h/2, b, h, 0, 0, b, h);
-						ctx.restore();
-					}
-
-					ctx.translate(b,0);
-					ctx.rotate(a);
-
-			}
-
-			ctx.restore();
-
+			// increment rotation
 			if (rotate.checked) {
-				i++;
+				rotation++;
 			}
 
 		}, 1000/30);
+	}
 
-	}); //loadedmetadata
+
+	// mask source within a triangle
+	function triangleClip() {
+		ctx.beginPath();
+		//if (reverse.checked) {
+			ctx.moveTo(0, 0);
+			ctx.lineTo(triangle.b, 0);
+			ctx.lineTo(triangle.b / 2, triangle.h);
+		/*}
+		else {
+			ctx.moveTo(triangle.b / 2, 0);
+			ctx.lineTo(triangle.b, triangle.h);
+			ctx.lineTo(0, triangle.h);
+		}*/
+
+		ctx.clip();
+	}
+
+
+	// mask canvas within a circle
+	function circleClip() {
+		ctx.beginPath();
+		ctx.arc(canvas.width/2, canvas.height/2, triangle.h, 2 * Math.PI, 0);
+		ctx.clip();
+	}
+
+
+	// draw triangular section of polygon to canvas
+	function drawTriangle(flip) {
+
+		ctx.save();
+
+		// flip to make mirror image
+		if (flip) {
+			ctx.translate(triangle.b, 0);
+			ctx.scale(-1, 1);
+		}
+
+		// clip to triangle shape
+		triangleClip();
+
+		ctx.drawImage(srcCanvas, srcCanvas.width/2 - triangle.b/2, srcCanvas.height/2 - triangle.h/2, triangle.b, triangle.h, 0, 0, triangle.b, triangle.h);
+
+		ctx.restore();
+
+		ctx.translate(triangle.b, 0);
+		ctx.rotate(triangle.a);
+	}
+
+
+	// draw video (or fallback image) to source canvas
+	function drawSource() {
+		var srcSize = getSourceDimensions(source);
+		srcCtx.save();
+
+		// translate to set rotation point in center, then translate back
+		srcCtx.translate(r/2, r/2);
+		srcCtx.rotate(rotation * Math.PI/180); // convert degrees to radians
+		srcCtx.translate(-r/2,-r/2);
+
+		// this works to crop, center image, and rotate around the center
+		var sx = (srcSize.w - srcSize.s) / 2;
+		var sy = (srcSize.h - srcSize.s) / 2;
+		var sw = srcSize.s;
+		var sh = srcSize.s;
+		var dx = 0;
+		var dy = 0;
+		var dw = r;
+		var dh = r;
+		srcCtx.drawImage(source, sx, sy, sw, sh, dx, dy, dw, dh);
+
+		srcCtx.restore();
+	}
+
+
+	// draw whole kaleidoscope
+	function drawKaleidoscope() {
+		ctx.save();
+			// center
+			ctx.translate(canvas.width/2 - triangle.b/2, 0);
+
+		// loop through sides and draw each triangle, flipping every other one
+		for (var side=0; side<n; side++) {
+			drawTriangle(side%2);
+		}
+
+		ctx.restore();
+	}
+
+
+	// start button
+	$('#start').on('click', start);
+
+
+	// video loaded
+	$('#video').on('loadeddata', function() {
+		source = video;
+		video.play();
+		sourceLoaded();
+	});
+
+
+	//change the number of sides
+	$('#sides').change(function() {
+
+		var numSides = $('#sides').val();
+
+		// number of sides must be even and greater than 6
+		if (!(numSides%2) && numSides >= 6) {
+			// get new values
+			n = numSides;
+			triangle = getTriangleDimensions(r, n);
+			// resize canvas
+			canvas.width = 2 * triangle.h;
+			canvas.height = 2 * triangle.h;
+			circleClip();
+		}
+	});
+
 
 	//save images as png data and display thumbnails with links to full imgs
 	$('#canvas').click(function() {
@@ -243,14 +326,3 @@ $(function() {
 	});
 
 });
-
-/*
-features to add:
-save images
-record and save video?
-automatically resize on window resize
-fullscreen?
-filters?
-reverse (when not rotating)
-rotation speed control?
-*/

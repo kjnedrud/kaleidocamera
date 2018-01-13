@@ -22,15 +22,21 @@
 
 	<div class="main">
 
-		<canvas id="canvas"></canvas>
-		<canvas id="vidcanvas" style="display:none;"></canvas>
+		<div class="circle-wrap">
+			<canvas class="circle" id="canvas" style="filter:blur(10px); opacity:0;"></canvas>
+			<div class="message">
+				<p><button id="start">Start</button></p>
+				<input type="file" id="fallback-file" style="display:none;">
+			</div>
+		</div>
+
+		<canvas id="src-canvas" style="display:none;"></canvas>
 		<video id="video" autoplay="true" style="display:none;"></video>
 
 		<div class="container">
 			<noscript><p class="error">JavaScript must be enabled.</p></noscript>
-			<button id="start">Start</button>
 			<p class="instructions" style="display: none;">Tap/click above to take a picture. Save the ones you like to your device!</p>
-			<div id="pictures"></div>
+			<div class="clearfix" id="pictures"></div>
 		</div>
 
 	</div><!-- .main -->
@@ -38,8 +44,10 @@
 	<footer class="footer controls" style="display: none;">
 		<div class="container">
 
-			<select id="sides">
-				<option value="6" selected>6</option>
+			<input type="range" id="sides" min="6" max="24" step="2" list="sides-list" value="6" style="margin-right:2em; max-width:320px; width:calc(100% - 120px);">
+
+			<datalist id="sides-list">
+				<option value="6" label="6">6</option>
 				<option value="8">8</option>
 				<option value="10">10</option>
 				<option value="12">12</option>
@@ -48,10 +56,10 @@
 				<option value="18">18</option>
 				<option value="20">20</option>
 				<option value="22">22</option>
-				<option value="24">24</option>
-			</select>
+				<option value="24" label="24">24</option>
+			</datalist>
 
-			<input type="checkbox" id="rotate" /><label for="rotate">Auto-rotate?</label>
+			<input type="checkbox" id="rotate" /><label for="rotate">Rotate</label>
 			<!--<input type="checkbox" id="reverse" checked /><label for="reverse">Reverse?</label>-->
 
 		</div>

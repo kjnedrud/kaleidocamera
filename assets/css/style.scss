@@ -37,12 +37,22 @@ a {
 	width: 600px;
 }
 
+.clearfix {
+	&:after {
+		clear: both;
+		content: '';
+		display: block;
+		height: 0;
+		width: 100%;
+	}
+}
+
 .header {
+	padding: 0.5em 0;
 
 	.logo {
 		display: block;
 		height: 45px;
-		margin: 0.5em 0;
 		width: 225px;
 	}
 }
@@ -62,14 +72,44 @@ a {
 	text-align: center;
 }
 
+.circle-wrap {
+	margin: 1em 0;
+	position: relative;
+
+	.message {
+		box-sizing: border-box;
+		display: block;
+		padding: 0 2em;
+		position: absolute;
+		text-align: center;
+		top: 50%;
+		transform: translate(0, -50%);
+		width: 100%;
+
+		.error {
+			margin: 1em auto;
+			width: 220px;
+		}
+	}
+}
+
+.circle {
+	background: #333;
+	border-radius: 50%;
+	overflow: hidden;
+	transition: filter 600ms;
+}
+
 #canvas {
 	clear: both;
 	display: block;
-	margin: 20px auto;
+	margin: 0 auto;
 }
 
 .error {
-	clear: both;
+	background: rgba(#600, 0.5);
+	border: 1px solid #600;
+	padding: 0.5em;
 }
 
 .thumb {
