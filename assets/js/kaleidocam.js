@@ -314,17 +314,35 @@ $(function() {
 		}
 	});
 
+	// show image viewer modal
+	$('body').on('click', '#img-viewer-open .thumb', function(){
+		$('#img-viewer-overlay').show();
+		$('body').addClass('no-scroll');
+	});
 
 	//save images as png data and display thumbnails with links to full imgs
-	$('#canvas').click(function() {
+	$('body').on('click', '#canvas', function() {
 		var imgdata = canvas.toDataURL('image/png');
-		//var img = document.createElement('img');
-		var img = $('<img class="thumb" alt="thumbnail" />');
-		img.attr('src',imgdata);
-		var imglink = $('<a title="Full Image" target="_blank"></a>');
-		imglink.append(img);
-		imglink.attr('href',imgdata);
-		$('#pictures').append(imglink);
+		$('#thumbs .thumb').removeClass('active');
+		$('#thumbs').prepend('<img class="thumb active" src="' + imgdata + '"/></a>');
+		$('#img-main').html('<img class="thumb" src="' + imgdata + '"/>');
+		$('#img-viewer-open').html('<img class="thumb icon" src="' + imgdata + '"/>');
+	});
+
+	// view a thumbnail
+	$('body').on('click', '#thumbs .thumb', function(){
+		var src = $(this).attr('src');
+		$('#img-main .thumb').attr('src', src);
+		$('#thumbs .thumb').removeClass('active');
+		$(this).addClass('active');
+	});
+
+	// hide image viewer modal
+	$('.overlay').click(function(e){
+		if (e.target == e.currentTarget) {
+			$(this).hide();
+			$('body').removeClass('no-scroll');
+		}
 	});
 
 });

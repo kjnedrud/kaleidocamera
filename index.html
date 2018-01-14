@@ -36,7 +36,7 @@
 		<div class="container">
 			<noscript><p class="error">JavaScript must be enabled.</p></noscript>
 			<p class="instructions" style="display: none;">Tap/click above to take a picture. Save the ones you like to your device!</p>
-			<div class="clearfix" id="pictures"></div>
+			<p id="img-viewer-open"></p>
 		</div>
 
 	</div><!-- .main -->
@@ -65,6 +65,17 @@
 		</div>
 	</footer>
 
+	<!-- image viewer modal overlay -->
+	<div class="overlay" id="img-viewer-overlay" style="display:none;">
+		<div class="container">
+			<div class="modal img-viewer">
+				<div id="img-main" class="img-main">
+				</div><!-- .img-main -->
+				<div class="thumbs" id="thumbs">
+				</div><!-- .thumbs -->
+			</div><!-- .modal.img-viewer -->
+		</div><!-- .container -->
+	</div><!-- .overlay -->
 
 	<!-- google analytics -->
 	<script>
