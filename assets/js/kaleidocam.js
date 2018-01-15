@@ -26,7 +26,6 @@ $(function() {
 
 	// controls
 	var rotate = document.getElementById('rotate');
-	var reverse = document.getElementById('reverse');
 	var rotation = 0; // rotation in degrees
 
 	// set canvas dimensions
@@ -41,14 +40,13 @@ $(function() {
 	}
 
 	// show canvas once the dimensions are set
-	$('#canvas').css('opacity', 1);
-
+	$('#canvas').removeClass('hidden');
 
 	// calculate radius of circle
 	function getRadius() {
 		// make it fit within the screen
-		var wOffset = 40;
-		var hOffset = 65 + 20 +20 + 60 + 50;
+		var wOffset = 20 + 20; // left padding + right padding
+		var hOffset = 45 + 60 + 20 + 80; // header + controls + padding + footer
 		var w = window.innerWidth - wOffset;
 		var h = window.innerHeight - hOffset;
 		var r;
@@ -142,27 +140,33 @@ $(function() {
 	function userMediaFail(error) {
 		// error message
 		$('.circle-wrap .message').append('<p class="error">Camera access is required. Please check your device and browser permissions.</p>');
+	}
 
 
-		$('#fallback-file').show();
+	// fallback file upload
+	function fileUpload(e) {
+		// get file
+		var file = e.target.files[0];
 
-		// fallback image upload
-		var fileInput = document.getElementById('fallback-file');
-		fileInput.onchange = function(e){
-			var file = e.target.files[0];
-			if (file.type.match('image.*')) {
-				var fr = new FileReader();
-				fr.onload = function(e){
+		// make sure file is an image
+		if (file.type.match('image.*')) {
 
-					var img = new Image();
-					img.onload = function(e){
-						source = img;
-						sourceLoaded();
-					}
-					img.src = fr.result;
-				};
-				fr.readAsDataURL(file);
-			}
+			var fr = new FileReader();
+
+			// when file is loaded
+			fr.onload = function(e){
+
+				// create new image and use as source
+				var img = new Image();
+				img.onload = function(e){
+					source = img;
+					sourceLoaded();
+				}
+				img.src = fr.result;
+			};
+
+			// read file
+			fr.readAsDataURL(file);
 		}
 	}
 
@@ -170,14 +174,19 @@ $(function() {
 	// source video (or fallback image) loaded
 	function sourceLoaded() {
 
-		$('.circle-wrap .message').hide().find('loading, .error').remove();
-		$('.circle').css('filter', 'none')
-		$('.instructions, .controls').show();
-		$('.main').css('padding-bottom', $('.controls').outerHeight());
+		// clip canvas to a circle
+		circleClip();
+
+		// hide messages and remove loading and error elements
+		$('.circle-wrap .message').hide().find('.loading, .error').remove();
+
+		// enable clicking canvas to save images
+		$('#canvas').removeClass('disabled').attr('title', 'Tap or click anywhere in the circle to take a picture.').on('click', saveImage);
+
+		// show controls
+		$('.controls, .camera-controls').removeClass('hidden');
 
 		var srcSize = getSourceDimensions(source);
-
-		circleClip();
 
 		// todo: change to requestAnimationFrame
 		// draw video frames on source canvas
@@ -201,17 +210,10 @@ $(function() {
 	// mask source within a triangle
 	function triangleClip() {
 		ctx.beginPath();
-		//if (reverse.checked) {
-			ctx.moveTo(0, 0);
-			ctx.lineTo(triangle.b, 0);
-			ctx.lineTo(triangle.b / 2, triangle.h);
-		/*}
-		else {
-			ctx.moveTo(triangle.b / 2, 0);
-			ctx.lineTo(triangle.b, triangle.h);
-			ctx.lineTo(0, triangle.h);
-		}*/
-
+		ctx.moveTo(0, 0);
+		ctx.lineTo(triangle.b, 0);
+		ctx.lineTo(triangle.b / 2, triangle.h);
+		ctx.closePath();
 		ctx.clip();
 	}
 
@@ -277,8 +279,9 @@ $(function() {
 	// draw whole kaleidoscope
 	function drawKaleidoscope() {
 		ctx.save();
-			// center
-			ctx.translate(canvas.width/2 - triangle.b/2, 0);
+
+		// center
+		ctx.translate(canvas.width/2 - triangle.b/2, 0);
 
 		// loop through sides and draw each triangle, flipping every other one
 		for (var side=0; side<n; side++) {
@@ -289,9 +292,22 @@ $(function() {
 	}
 
 
+	// create png data image from canvas and add to image viewer
+	function saveImage() {
+		var imgdata = canvas.toDataURL('image/png');
+		$('#thumbs .thumb').removeClass('active');
+		$('#thumbs').prepend('<img class="thumb active" src="' + imgdata + '"/></a>');
+		$('#img-main').html('<img class="thumb" src="' + imgdata + '"/>');
+		$('#download').attr('href', imgdata);
+		$('#img-viewer-open').html('<img class="thumb" src="' + imgdata + '"/>');
+	}
+
+
 	// start button
 	$('#start').on('click', start);
 
+	// fallback file upload
+	$('#fallback-file').on('change', fileUpload);
 
 	// video loaded
 	$('#video').on('loadeddata', function() {
@@ -299,7 +315,6 @@ $(function() {
 		video.play();
 		sourceLoaded();
 	});
-
 
 	//change the number of sides
 	$('#sides').change(function() {
@@ -320,14 +335,8 @@ $(function() {
 		$('body').addClass('no-scroll');
 	});
 
-	//save images as png data and display thumbnails with links to full imgs
-	$('body').on('click', '#canvas', function() {
-		var imgdata = canvas.toDataURL('image/png');
-		$('#thumbs .thumb').removeClass('active');
-		$('#thumbs').prepend('<img class="thumb active" src="' + imgdata + '"/></a>');
-		$('#img-main').html('<img class="thumb" src="' + imgdata + '"/>');
-		$('#img-viewer-open').html('<img class="thumb icon" src="' + imgdata + '"/>');
-	});
+	// save images from canvas
+	$('body').on('click', '#save', saveImage);
 
 	// view a thumbnail
 	$('body').on('click', '#thumbs .thumb', function(){
@@ -344,5 +353,11 @@ $(function() {
 			$('body').removeClass('no-scroll');
 		}
 	});
+
+	// close
+	$('.overlay .close').click(function(e){
+		$(this).closest('.overlay').hide();
+		$('body').removeClass('no-scroll');
+	})
 
 });

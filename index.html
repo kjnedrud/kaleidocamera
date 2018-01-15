@@ -22,57 +22,79 @@
 
 	<div class="main">
 
+		<div class="controls hidden">
+			<div class="container">
+
+				<input type="checkbox" id="rotate" /><label for="rotate">Rotate</label>
+
+				<input type="range" id="sides" min="6" max="24" step="2" list="sides-list" value="6" style="margin-left:2em; max-width:320px; width:calc(100% - 120px); float:right;">
+
+				<datalist id="sides-list">
+					<option value="6" label="6">6</option>
+					<option value="8">8</option>
+					<option value="10">10</option>
+					<option value="12">12</option>
+					<option value="14">14</option>
+					<option value="16">16</option>
+					<option value="18">18</option>
+					<option value="20">20</option>
+					<option value="22">22</option>
+					<option value="24" label="24">24</option>
+				</datalist>
+
+			</div><!-- .container -->
+		</div><!-- .controls -->
+
 		<div class="circle-wrap">
-			<canvas class="circle" id="canvas" style="filter:blur(10px); opacity:0;"></canvas>
+			<canvas class="circle hidden disabled" id="canvas"></canvas>
 			<div class="message">
-				<p><button id="start">Start</button></p>
-				<input type="file" id="fallback-file" style="display:none;">
+				<p><button id="start" class="big">Start</button></p>
+				<p>Or upload an image:</p>
+				<input type="file" accept="image/*;capture=camera" id="fallback-file">
 			</div>
 		</div>
 
-		<canvas id="src-canvas" style="display:none;"></canvas>
-		<video id="video" autoplay="true" style="display:none;"></video>
-
-		<div class="container">
-			<noscript><p class="error">JavaScript must be enabled.</p></noscript>
-			<p class="instructions" style="display: none;">Tap/click above to take a picture. Save the ones you like to your device!</p>
-			<p id="img-viewer-open"></p>
-		</div>
+		<canvas id="src-canvas" style="display:none !important;"></canvas>
+		<video id="video" autoplay="true" style="display:none !important;"></video>
 
 	</div><!-- .main -->
 
-	<footer class="footer controls" style="display: none;">
+	<footer class="footer camera-controls hidden">
 		<div class="container">
 
-			<input type="range" id="sides" min="6" max="24" step="2" list="sides-list" value="6" style="margin-right:2em; max-width:320px; width:calc(100% - 120px);">
+			<div class="sources">
+			</div>
 
-			<datalist id="sides-list">
-				<option value="6" label="6">6</option>
-				<option value="8">8</option>
-				<option value="10">10</option>
-				<option value="12">12</option>
-				<option value="14">14</option>
-				<option value="16">16</option>
-				<option value="18">18</option>
-				<option value="20">20</option>
-				<option value="22">22</option>
-				<option value="24" label="24">24</option>
-			</datalist>
+			<button id="save" class="save"></button>
 
-			<input type="checkbox" id="rotate" /><label for="rotate">Rotate</label>
-			<!--<input type="checkbox" id="reverse" checked /><label for="reverse">Reverse?</label>-->
+			<div id="img-viewer-open" class="img-viewer-open"></div>
 
 		</div>
 	</footer>
 
 	<!-- image viewer modal overlay -->
-	<div class="overlay" id="img-viewer-overlay" style="display:none;">
+	<div class="overlay hidden" id="img-viewer-overlay">
 		<div class="container">
 			<div class="modal img-viewer">
-				<div id="img-main" class="img-main">
-				</div><!-- .img-main -->
-				<div class="thumbs" id="thumbs">
-				</div><!-- .thumbs -->
+
+				<a href="#" class="close" title="Close">Close</a>
+
+				<div id="img-main" class="img-main"></div>
+
+				<div class="actions">
+
+					<button id="imgur" class="upload" title="Upload to Imgur">Imgur</button>
+
+					<div>
+						<a href="#" id="download" class="download" title="Save to Device" download="kaleidocamera.png">Download</a>
+					</div>
+
+					<p class="terms text-small">By uploading you agree to <a href="https://imgur.com/tos" title="Imgur Terms of Service" target="_blank">Imgur's Terms</a>.</p>
+
+				</div><!-- .actions -->
+
+				<div class="thumbs" id="thumbs"></div>
+
 			</div><!-- .modal.img-viewer -->
 		</div><!-- .container -->
 	</div><!-- .overlay -->

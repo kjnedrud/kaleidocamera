@@ -5,12 +5,17 @@ $line-height: 1.5;
 $blue: #38a1d1;
 $blue-grey: #2e3c61;
 
+$up-arrow: '\2191';
+$down-arrow: '\2193';
+$x: '\2715';
+
 html, body {
 	background: #161616;
 	border: 0;
 	color: #ccc;
 	font-family: 'Open Sans', Arial, sans-serif;
 	font-size: $base-size;
+	height: 100%;
 	line-height: $line-height;
 	margin: 0;
 	padding: 0;
@@ -33,6 +38,19 @@ img {
 
 a {
 	color: $blue;
+	text-decoration: underline;
+
+	&:focus, &:hover {
+		color: #fff;
+		text-decoration: underline;
+	}
+
+	&[download]:before {
+		content: $down-arrow;
+		display: inline-block;
+		margin-right: 0.25em;
+		text-align: center;
+	}
 }
 
 .container {
@@ -53,38 +71,79 @@ a {
 	}
 }
 
-.header, .main, .footer {
+.hidden {
+	display: none;
+}
+
+.text-small {
+	font-size: 0.75em;
+}
+
+.header, .controls, .main, .footer, .overlay {
 	font-size: 16px;
 }
 
 .header {
-	padding: 10px 0;
+	background: rgba($blue-grey, 0.5);
+	border-bottom: 1px solid $blue-grey;
+	margin-bottom: -1px;
 
 	.logo {
 		display: block;
 		height: 45px;
+		margin-left: -5px;
 		width: 225px;
 	}
 }
 
+.controls {
+	height: 40px;
+	text-align: left;
+	padding: 10px 0;
+}
+
 .main {
+	display: flex;
+	flex-direction: column;
+	height: calc(100% - #{45px + 80px}); // header + footer
+	justify-content: center;
 	text-align: center;
 }
 
+.camera-controls .container {
+	align-items: center;
+	display: grid;
+	grid-column-gap: 20px;
+	grid-template-columns: 1fr 1fr 1fr;
+	justify-content: space-evenly;
+	text-align: center;
+}
+
+.save {
+	background: rgba(#fff, 0.2);
+	border: 3px solid #ccc;
+	border-radius: 50%;
+	height: 60px;
+	margin: 0 auto;
+	width:60px;
+
+	&:focus {
+		box-shadow: 0 0 2px 5px rgba($blue, 0.5);
+		outline: none;
+	}
+}
+
 .footer {
-	background: rgba($blue-grey, 0.95);
 	bottom: 0;
 	color: #fff;
-	height: $base-size * $line-height;
 	left: 0;
-	padding: 10px;
+	padding: 10px 0;
 	position: fixed;
 	right: 0;
 	text-align: center;
 }
 
 .circle-wrap {
-	margin: 1em 0;
 	position: relative;
 
 	.message {
@@ -107,14 +166,19 @@ a {
 .circle {
 	background: #333;
 	border-radius: 50%;
-	overflow: hidden;
-	transition: filter 600ms;
-}
-
-#canvas {
-	clear: both;
+	cursor: pointer;
 	display: block;
+	height: auto;
+	overflow: hidden;
 	margin: 0 auto;
+	max-width: 100%;
+	transition: filter 600ms;
+
+	&.disabled {
+		cursor: default;
+		filter: blur(10px);
+		margin-top: 60px; // height of controls
+	}
 }
 
 .error {
@@ -134,10 +198,9 @@ a {
 	box-sizing: border-box;
 	cursor: pointer;
 	display: inline-block;
-	font-size: $base-size * 1.5;
-	font-size: 1.5rem;
+	font-size: $base-size;
 	max-width: 100%;
-	min-width: 6em;
+	min-width: 2em;
 	padding: 0.25em 1em;
 	text-align: center;
 	transition: background 200ms;
@@ -145,9 +208,24 @@ a {
 	&:focus, &:hover {
 		background: $blue;
 	}
+
+	&.big {
+		font-size: $base-size * 1.5;
+		font-size: 1.5rem;
+		min-width: 6em;
+	}
+
+	&.upload {
+		&:before {
+			content: $up-arrow;
+			display: inline-block;
+			margin-right: 0.25em;
+			text-align: center;
+		}
+	}
 }
 
-button {
+button, .button {
 	@extend %button;
 }
 
@@ -173,6 +251,33 @@ select {
 		max-height: calc(100vh - 40px);
 		overflow-y: auto;
 		padding: 20px;
+		position: relative;
+
+		.close {
+			color: #ccc;
+			display: block;
+			height: 40px;
+			overflow: hidden;
+			position: absolute;
+			right: 0px;
+			text-decoration: none;
+			top: 0px;
+			width: 40px;
+
+			&:hover {
+				color: #fff;
+				text-decoration: none;
+			}
+
+			&:before {
+				content: $x;
+				display: block;
+				height: 20px;
+				padding: 10px;
+				text-align: center;
+				width: 20px;
+			}
+		}
 	}
 }
 
@@ -180,10 +285,14 @@ select {
 	border-radius: 50%;
 }
 
-.thumb.icon {
-	height: 40px;
-	cursor: pointer;
-	width: 40px;
+.img-viewer-open {
+	float: right;
+
+	.thumb {
+		cursor: pointer;
+		height: 40px;
+		width: 40px;
+	}
 }
 
 .img-viewer {
@@ -197,19 +306,41 @@ select {
 			display: block;
 			margin: 0 auto;
 			max-height: calc(100vh - 180px);
-			max-height: calc(100vh - 200px);
+			max-height: calc(100vh - (40px + 115px + 100px + 40px )); // top padding + actions + thumbs + bottom padding
 			width: auto;
+		}
+	}
+
+	.actions {
+		align-items: center;
+		display: grid;
+		grid-column-gap: 20px;
+		grid-template-columns: 1fr 1fr;
+		margin: 40px 0 20px 0;
+		text-align: center;
+
+		.upload {
+
+		}
+
+		.download {
+
+		}
+
+		.terms {
+			grid-column-start: 1;
+			grid-column-end: 3;
+			text-align: left;
 		}
 	}
 
 	.thumbs {
 		display: grid;
 		flex-grow: 1;
-		grid-column-gap: 20px;
-		grid-row-gap: 20px;
+		grid-gap: 20px;
 		grid-template-columns: repeat(auto-fit, minmax(40px, 0.25fr));
 		justify-content: space-evenly;
-		margin: (40px - 5px) -5px -5px -5px; // cancel out padding
+		margin: -5px; // cancel out padding
 		padding: 5px; // extra padding so shadow on active thumb does not get cut off
 		min-height: 80px;
 		overflow-y: auto;
@@ -220,18 +351,6 @@ select {
 			&.active {
 				box-shadow: 0 0 0 2px rgba($blue, 0.8);
 			}
-		}
-	}
-}
-
-
-@media screen and (max-width: 500px) {
-
-	.header {
-
-		.logo {
-			height: 30px;
-			width: 150px;
 		}
 	}
 }
