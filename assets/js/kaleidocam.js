@@ -360,4 +360,37 @@ $(function() {
 		$('body').removeClass('no-scroll');
 	})
 
+	// upload image to imgur
+	$('#imgur').click(function(e){
+
+		// split base64 tring - need to get everything after "base64,"
+		var base64 = $('#img-main .thumb').attr('src').split('base64,')[1];
+
+		// imgur app client id - only thing required for anonymous uploads
+		var clientId = '77b3d0df434b643';
+
+		// ajax post
+		$.ajax({
+			url: 'https://api.imgur.com/3/image',
+			method: 'POST',
+			headers: {
+				Authorization: 'Client-ID ' + clientId
+			},
+			data: {
+				image: base64,
+				type: 'base64',
+				name: '',
+				title: 'Kaleidoscope Camera Image',
+				description: 'Made with https://kaleidocamera.com'
+			},
+			success: function(result) {
+				console.log(result);
+			},
+			error: function(result) {
+				console.log(result);
+			}
+
+		});
+	});
+
 });
