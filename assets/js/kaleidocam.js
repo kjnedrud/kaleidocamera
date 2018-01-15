@@ -108,8 +108,8 @@ $(function() {
 	// start video stream
 	function start() {
 
-		// hide button
-		$('#start').hide();
+		// hide start button and file upload
+		$('#start, #fallback-message').hide();
 
 		// add loading message
 		$('.circle-wrap .message').append('<p class="loading">Loading...</p>');
@@ -124,8 +124,10 @@ $(function() {
 			navigator.mediaDevices.getUserMedia(constraints).then(userMediaSuccess).catch(userMediaFail);
 		}
 		else {
-			// error message
-			$('.circle-wrap .message').append('<p class="error">Sorry, your browser is not supported. Try using the latest version of Chrome, Firefox, Safari, or Edge.</p>');
+			// remove loading message, add error message, and show fallback file input
+			$('.loading').remove();
+			$('.circle-wrap .message').prepend('<p class="error">Sorry, your browser is not supported. Try using the latest version of Chrome, Firefox, Safari, or Edge.</p>');
+			$('#fallback-message').show();
 		}
 	}
 
@@ -138,8 +140,10 @@ $(function() {
 
 	// error callback for getUserMedia
 	function userMediaFail(error) {
-		// error message
-		$('.circle-wrap .message').append('<p class="error">Camera access is required. Please check your device and browser permissions.</p>');
+		// remove loading message, add error message, and show fallback file input
+		$('.loading').remove();
+		$('.circle-wrap .message').prepend('<p class="error">Camera access is required. Please check your device and browser permissions.</p>');
+		$('#fallback-message').show();
 	}
 
 
