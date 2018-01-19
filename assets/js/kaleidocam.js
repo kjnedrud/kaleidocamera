@@ -28,6 +28,9 @@ $(function() {
 	var rotate = document.getElementById('rotate');
 	var rotation = 0; // rotation in degrees
 
+	// imgur app client id - only thing required for anonymous uploads
+	var imgurClientId = '77b3d0df434b643';
+
 	// set canvas dimensions
 	srcCanvas.width = triangle.h;
 	srcCanvas.height = triangle.h;
@@ -109,7 +112,7 @@ $(function() {
 	function start() {
 
 		// hide start button and file upload
-		$('#start, #fallback-message').hide();
+		$('#start, #fallback-message').addClass('hidden');
 
 		// add loading message
 		$('.circle-wrap .message').append('<p class="loading">Loading...</p>');
@@ -127,7 +130,7 @@ $(function() {
 			// remove loading message, add error message, and show fallback file input
 			$('.loading').remove();
 			$('.circle-wrap .message').prepend('<p class="error">Sorry, your browser is not supported. Try using the latest version of Chrome, Firefox, Safari, or Edge.</p>');
-			$('#fallback-message').show();
+			$('#fallback-message').removeClass('hidden');
 		}
 	}
 
@@ -143,7 +146,7 @@ $(function() {
 		// remove loading message, add error message, and show fallback file input
 		$('.loading').remove();
 		$('.circle-wrap .message').prepend('<p class="error">Camera access is required. Please check your device and browser permissions.</p>');
-		$('#fallback-message').show();
+		$('#fallback-message').removeClass('hidden');
 	}
 
 
@@ -182,10 +185,10 @@ $(function() {
 		circleClip();
 
 		// hide messages and remove loading and error elements
-		$('.circle-wrap .message').hide().find('.loading, .error').remove();
+		$('.circle-wrap .message').addClass('hidden').find('.loading, .error').remove();
 
 		// enable clicking canvas to save images
-		$('#canvas').removeClass('disabled').attr('title', 'Tap or click anywhere in the circle to take a picture.').on('click', saveImage);
+		$('#canvas').removeClass('disabled').attr('title', 'Tap or click anywhere in the circle to take a picture.');
 
 		// show controls
 		$('.controls, .camera-controls').removeClass('hidden');
@@ -296,14 +299,69 @@ $(function() {
 	}
 
 
+	// set the active image in the image viewer
+	function setActiveImage($thumb) {
+
+		var imgdata = $thumb.attr('src');
+
+		// switch active thumb
+		$('#thumbs .thumb').removeClass('active');
+		$thumb.addClass('active');
+
+		// update main image
+		$('#img-main').html('<img class="thumb" src="' + imgdata + '"/>');
+
+		// update download link
+		$('#download').attr('href', imgdata).attr('download', $thumb.attr('alt'));
+	}
+
+
 	// create png data image from canvas and add to image viewer
 	function saveImage() {
+
+		// get image data from canvas
 		var imgdata = canvas.toDataURL('image/png');
-		$('#thumbs .thumb').removeClass('active');
-		$('#thumbs').prepend('<img class="thumb active" src="' + imgdata + '"/></a>');
-		$('#img-main').html('<img class="thumb" src="' + imgdata + '"/>');
-		$('#download').attr('href', imgdata);
+
+		// build image file name with a random 4-digit number
+		var random = Math.floor(Math.random() * 9000) + 1000;
+		var name = 'kaleidocamera-' + random + '.png';
+
+		// create new image and add to list of thumbnails
+		var $thumb = $('<img class="thumb" src="' + imgdata + '" alt="' + name + '" />');
+
+		// add to list of thumbnails
+		$('#thumbs').prepend($thumb);
+
+		// set new image to active
+		setActiveImage($thumb);
+
+		// set image viewer open to new image
 		$('#img-viewer-open').html('<img class="thumb" src="' + imgdata + '"/>');
+	}
+
+
+	// wrapper to get/set localStorage
+	function storage(key, val) {
+
+		// get (no val passed)
+		if (typeof val === 'undefined') {
+
+			var data = window.localStorage.getItem(key);
+
+			if (data == null) {
+				data = {};
+			}
+			else {
+				data = JSON.parse(data);
+			}
+
+			return data;
+		}
+
+		// set
+		else {
+			window.localStorage.setItem(key, JSON.stringify(val));
+		}
 	}
 
 
@@ -333,68 +391,179 @@ $(function() {
 		}
 	});
 
+
 	// show image viewer modal
 	$('body').on('click', '#img-viewer-open .thumb', function(){
-		$('#img-viewer-overlay').show();
+		// make sure browse step is visible
+		$('.img-viewer').removeClass('share success').addClass('browse');
+		// show modal
+		$('#img-viewer-overlay').removeClass('hidden');
+		// disable scrolling
 		$('body').addClass('no-scroll');
 	});
 
 	// save images from canvas
-	$('body').on('click', '#save', saveImage);
+	$('body').on('click', '#canvas:not(.disabled), #save', saveImage);
 
 	// view a thumbnail
 	$('body').on('click', '#thumbs .thumb', function(){
-		var src = $(this).attr('src');
-		$('#img-main .thumb').attr('src', src);
-		$('#thumbs .thumb').removeClass('active');
-		$(this).addClass('active');
+		setActiveImage($(this));
 	});
 
 	// hide image viewer modal
 	$('.overlay').click(function(e){
 		if (e.target == e.currentTarget) {
-			$(this).hide();
+			$(this).addClass('hidden');
 			$('body').removeClass('no-scroll');
 		}
 	});
 
 	// close
 	$('.overlay .close').click(function(e){
-		$(this).closest('.overlay').hide();
+		$(this).closest('.overlay').addClass('hidden');
 		$('body').removeClass('no-scroll');
 	})
 
+	// share step
+	$('#imgur-share').click(function(e){
+
+		// if already shared, go straight to success
+		if ($('.img-viewer .thumb.active').data('imgur-url')) {
+
+			var $thumb = $('.img-viewer .thumb.active');
+
+			var url = $thumb.data('imgur-url');
+			var deleteHash = $thumb.data('imgur-delete-hash');
+
+			// add imgur link, url input, and delete link
+			$('#imgur-link').attr('href', url);
+			$('#imgur-url').val(url);
+			$('#imgur-delete').data('delete-hash', deleteHash);
+
+			// switch to success
+			$('.img-viewer').removeClass('browse').addClass('success');
+		}
+		else {
+			// switch modal from browse to share
+			$('.img-viewer').removeClass('browse').addClass('share');
+			// clear and focus input
+			$('#imgur-title').val('').focus();
+		}
+
+	});
+
+	// cancel share (back to browse step)
+	$('#cancel').click(function(e){
+		e.preventDefault();
+		$('.img-viewer').removeClass('share').addClass('browse');
+	});
+
+	// back (from success step to browse step)
+	$('#back').click(function(e){
+		e.preventDefault();
+		$('.img-viewer').removeClass('success').addClass('browse');
+	});
+
 	// upload image to imgur
-	$('#imgur').click(function(e){
+	$('body').on('click', '#imgur-upload:not(.disabled)', function(e){
 
+		$(this).addClass('disabled loading');
+
+		var $thumb = $('.img-viewer .thumb.active');
+		var name = $thumb.attr('alt');
+		var title = $('#imgur-title').val() || 'Kaleidoscope Camera Image';
 		// split base64 tring - need to get everything after "base64,"
-		var base64 = $('#img-main .thumb').attr('src').split('base64,')[1];
-
-		// imgur app client id - only thing required for anonymous uploads
-		var clientId = '77b3d0df434b643';
+		var base64 = $thumb.attr('src').split('base64,')[1];
 
 		// ajax post
 		$.ajax({
 			url: 'https://api.imgur.com/3/image',
 			method: 'POST',
 			headers: {
-				Authorization: 'Client-ID ' + clientId
+				Authorization: 'Client-ID ' + imgurClientId
 			},
 			data: {
 				image: base64,
 				type: 'base64',
-				name: '',
-				title: 'Kaleidoscope Camera Image',
+				name: name,
+				title: title,
 				description: 'Made with https://kaleidocamera.com'
 			},
 			success: function(result) {
-				console.log(result);
+
+				var url = 'https://imgur.com/' + result.data.id;
+				var deleteHash = result.data.deletehash;
+
+				// save url and delete hash as data attribute
+				$thumb.data('imgur-id', result.data.id);
+				$thumb.data('imgur-url', url);
+				$thumb.data('imgur-delete-hash', deleteHash);
+
+				// save to local storage
+				var imgurData = storage('imgur');
+				// add/update object with matching id
+				imgurData[result.data.id] = {
+					id : result.data.id,
+					url : url,
+					deletehash : deleteHash
+				};
+				// save updated data
+				storage('imgur', imgurData);
+
+				// add imgur link and url input
+				$('#imgur-link').attr('href', url);
+				$('#imgur-url').val(url);
+
+				// switch to success
+				$('.img-viewer').removeClass('share').addClass('success');
+
+				// reset upload button
+				$('#imgur-upload').removeClass('disabled loading');
 			},
 			error: function(result) {
 				console.log(result);
 			}
 
 		});
+	});
+
+	// delete image from imgur
+	$('#imgur-delete').click(function(e){
+		e.preventDefault();
+
+		if (window.confirm('Are you sure? This will permanently delete the image from Imgur.')) {
+
+			var $thumb = $('.img-viewer .thumb.active');
+			var id = $thumb.data('imgur-id');
+			var deleteHash = $thumb.data('imgur-delete-hash');
+
+			// ajax delete
+			$.ajax({
+				url: 'https://api.imgur.com/3/image/' + deleteHash,
+				method: 'DELETE',
+				headers: {
+					Authorization: 'Client-ID ' + imgurClientId
+				},
+				success: function(result) {
+
+					// remove imgur data attributes
+					$('.img-viewer .thumb.active').removeData('imgur-id imgur-url imgur-delete-hash');
+
+					// remove from local storage
+					var imgurData = storage('imgur');
+					// remove object with matching id
+					delete imgurData[id];
+					// save updated data
+					storage('imgur', imgurData);
+
+					// switch to share
+					$('.img-viewer').removeClass('success').addClass('share');
+				},
+				error: function(result) {
+					console.log(result);
+				}
+			});
+		}
 	});
 
 });

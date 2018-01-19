@@ -8,7 +8,7 @@
 	<meta name="viewport" content="width=device-width,initial-scale=1.0,shrink-to-fit=no">
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
 	<script type="text/javascript" src="./assets/js/kaleidocam.js"></script>
-	<link href="//fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" type="text/css">
+	<link href="//fonts.googleapis.com/css?family=Open+Sans:400,700" rel="stylesheet" type="text/css">
 	<link rel="stylesheet" type="text/css" href="./assets/css/style.min.css" />
 </head>
 
@@ -68,9 +68,13 @@
 			<div class="sources">
 			</div>
 
-			<button id="save" class="save"></button>
+			<div>
+				<button id="save" class="save"></button>
+			</div>
 
-			<div id="img-viewer-open" class="img-viewer-open"></div>
+			<div>
+				<div id="img-viewer-open" class="img-viewer-open"></div>
+			</div>
 
 		</div>
 	</footer>
@@ -78,25 +82,65 @@
 	<!-- image viewer modal overlay -->
 	<div class="overlay hidden" id="img-viewer-overlay">
 		<div class="container">
-			<div class="modal img-viewer">
+			<div class="modal img-viewer browse">
 
 				<a href="#" class="close" title="Close">Close</a>
 
 				<div id="img-main" class="img-main"></div>
 
-				<div class="actions">
+				<!-- step 1: browse -->
+				<div id="browse">
 
-					<button id="imgur" class="upload" title="Upload to Imgur">Imgur</button>
+					<div class="actions inline-items text-center">
 
-					<div>
-						<a href="#" id="download" class="download" title="Save to Device" download="kaleidocamera.png">Download</a>
-					</div>
+						<a href="#" id="imgur-share" class="button" title="Imgur">Share on Imgur</a>
 
-					<p class="terms text-small">By uploading you agree to <a href="https://imgur.com/tos" title="Imgur Terms of Service" target="_blank">Imgur's Terms</a>.</p>
+						<a href="#" id="download" class="download" title="Download to Device" download="kaleidocamera.png" target="_blank">Save</a>
 
-				</div><!-- .actions -->
+					</div><!-- .actions -->
 
-				<div class="thumbs" id="thumbs"></div>
+					<div id="thumbs" class="thumbs" ></div>
+
+				</div><!-- #browse -->
+
+				<!-- step 2: share -->
+				<div id="share">
+
+					<p class="inline-items">
+						<b>Upload to Imgur</b>
+						<a href="#" id="cancel" class="x">Cancel</a>
+					</p>
+
+					<p>
+						<label for="imgur-title">Title</label>
+						<input type="text" id="imgur-title" name="title">
+					</p>
+
+					<p class="text-center">
+						<a href="#" id="imgur-upload" class="button arrow-up" title="Upload Anonymously to Imgur">Upload to Imgur</a>
+					</p>
+
+					<div class="text-center text-small">Image will be uploaded anonymously. By uploading you agree to <a href="https://imgur.com/tos" title="Imgur Terms of Service" target="_blank">Imgur's Terms</a>.</div>
+
+				</div><!-- #share -->
+
+				<!-- step 3: success -->
+				<div id="success">
+
+					<p><b>Upload Complete</b></p>
+
+					<p class="inline-items">
+						<a href="#" id="imgur-link" class="arrow-right" title="View on Imgur" target="_blank">View on Imgur</a>
+						<a href="#" id="imgur-delete" class="delete" title="Delete From Imgur" target="_blank">Delete</a>
+					</p>
+
+					<p>
+						<label for="imgur-url">Imgur URL</label>
+						<input type="text" id="imgur-url" readonly>
+					</p>
+
+					<p><a href="#" id="back" class="arrow-left" title="Back">Back</a></p>
+				</div><!-- #success -->
 
 			</div><!-- .modal.img-viewer -->
 		</div><!-- .container -->

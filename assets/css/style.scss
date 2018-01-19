@@ -4,9 +4,12 @@ $line-height: 1.5;
 
 $blue: #38a1d1;
 $blue-grey: #2e3c61;
+$red: #c11955;
 
-$up-arrow: '\2191';
-$down-arrow: '\2193';
+$arrow-up: '\2191';
+$arrow-down: '\2193';
+$arrow-left: '\2190';
+$arrow-right: '\2192';
 $x: '\2715';
 
 html, body {
@@ -41,16 +44,69 @@ a {
 	text-decoration: underline;
 
 	&:focus, &:hover {
-		color: #fff;
+		color: mix(#fff, $blue, 20%);
 		text-decoration: underline;
 	}
 
-	&[download]:before {
-		content: $down-arrow;
+	&.arrow-up, &.arrow-down, &.arrow-left, &.arrow-right, &.x {
+		white-space: nowrap;
+	}
+
+	&.arrow-up {
+		&::before {
+			content: $arrow-up;
+			display: inline-block;
+			margin-right: 0.25em;
+		}
+	}
+
+	&.arrow-down {
+		&::before {
+			content: $arrow-down;
+			display: inline-block;
+			margin-right: 0.25em;
+		}
+	}
+
+	&.arrow-left::before {
+		content: $arrow-left;
 		display: inline-block;
 		margin-right: 0.25em;
-		text-align: center;
 	}
+
+	&.arrow-right::after {
+		content: $arrow-right;
+		display: inline-block;
+		margin-left: 0.25em;
+	}
+
+	&.x::before {
+		content: $x;
+		display: inline-block;
+		margin-right: 0.25em;
+	}
+
+	&[download], &.download {
+		@extend .arrow-down;
+	}
+
+	&.delete {
+		@extend .x;
+		color: $red;
+
+		&:focus, &:hover {
+			color: mix(#fff, $red, 10%);
+		}
+	}
+}
+
+b, strong {
+	color: #fff;
+}
+
+p {
+	margin-bottom: #{(3 - $line-height) / 2}em;
+	margin-top: #{(3 - $line-height) / 2}em;
 }
 
 .container {
@@ -62,7 +118,7 @@ a {
 }
 
 .clearfix {
-	&:after {
+	&::after {
 		clear: both;
 		content: '';
 		display: block;
@@ -72,11 +128,27 @@ a {
 }
 
 .hidden {
-	display: none;
+	display: none !important;
 }
 
 .text-small {
 	font-size: 0.75em;
+}
+
+.text-big {
+	font-size: 1.25em;
+}
+
+.text-left {
+	text-align: left;
+}
+
+.text-right {
+	text-align: left;
+}
+
+.text-center {
+	text-align: center;
 }
 
 .header, .controls, .main, .footer, .overlay {
@@ -125,7 +197,7 @@ a {
 	border-radius: 50%;
 	height: 60px;
 	margin: 0 auto;
-	width:60px;
+	width: 60px;
 
 	&:focus {
 		box-shadow: 0 0 2px 5px rgba($blue, 0.5);
@@ -177,7 +249,7 @@ a {
 	&.disabled {
 		cursor: default;
 		filter: blur(10px);
-		margin-top: 60px; // height of controls
+		margin: 60px auto; // offset by height of controls so it stays in same position when they are displayed
 	}
 }
 
@@ -192,35 +264,62 @@ a {
  */
 
 %button {
-	background: #ccc;
+	background: $blue;
+	background: mix(#fff, $blue, 20%);
 	border: 0;
 	border-radius: 2px;
 	box-sizing: border-box;
+	color: #000;
 	cursor: pointer;
 	display: inline-block;
 	font-size: $base-size;
+	line-height: 1;
 	max-width: 100%;
 	min-width: 2em;
-	padding: 0.25em 1em;
+	padding: 0.25em 0.5em;
 	text-align: center;
+	text-decoration: none;
 	transition: background 200ms;
 
 	&:focus, &:hover {
-		background: $blue;
+		color: #000;
+		text-decoration: none;
+
+		&:not([disabled]), &:not(.disabled) {
+			background: mix(#fff, $blue, 20%);
+			background: $blue;
+		}
+	}
+
+	&[disabled], &.disabled {
+		cursor: default;
+		opacity: 0.5;
 	}
 
 	&.big {
 		font-size: $base-size * 1.5;
 		font-size: 1.5rem;
 		min-width: 6em;
+		padding: 0.25em 1em;
 	}
 
-	&.upload {
-		&:before {
-			content: $up-arrow;
-			display: inline-block;
-			margin-right: 0.25em;
+	&.loading {
+		position: relative;
+
+		&::after {
+			background: #999;
+			border-radius: 2px;
+			bottom: 0;
+			color: #666;
+			content: 'Loading...';
+			display: block;
+			font-size: 0.75em;
+			left: 0;
+			line-height: #{(1.5 / 0.75)}em;
+			position: absolute;
+			right: 0;
 			text-align: center;
+			top: 0;
 		}
 	}
 }
@@ -229,9 +328,55 @@ button, .button {
 	@extend %button;
 }
 
-select {
-	margin: 0px 4px;
+%input {
+	background: #f1f1f1;
+	border: 2px solid #666;
+	border-radius: 2px;
+	box-shadow: inset 2px 2px 2px rgba(#000, 0.2);
+	box-sizing: border-box;
+	color: #333;
+	font-size: 1em;
+	height: 30px;
+	line-height: $line-height;
+	margin: 0.25em 0;
+	max-width: 100%;
+	padding: 0.25em 0.5em;
+	width: 100%;
+
+	&:focus {
+		border-color: $blue;
+		box-shadow: inset 2px 2px 4px rgba(#000, 0.4);
+		outline: none;
+	}
 }
+
+input[type=text], .input {
+	@extend %input;
+}
+
+textarea {
+	@extend %input;
+	height: 60px;
+	min-height: $line-height * 1.5em;
+	min-width: 100%;
+}
+
+select {
+	@extend %input;
+}
+
+input[type=checkbox], input[type=radio] {
+	float: left;
+	margin: 0.5em;
+}
+
+label {
+	font-weight: 700;
+}
+
+/**
+ * Modal Overlay
+ */
 
 .overlay {
 	background: rgba(#000, 0.5);
@@ -269,7 +414,7 @@ select {
 				text-decoration: none;
 			}
 
-			&:before {
+			&::before {
 				content: $x;
 				display: block;
 				height: 20px;
@@ -286,12 +431,20 @@ select {
 }
 
 .img-viewer-open {
-	float: right;
+	background: rgba(#333, 0.5);
+	border-radius: 50%;
+	height: 44px; // 40 thumb + 4 border
+	margin: 0 auto;
+	width: 44px; // 40 thumb + 4 border
 
 	.thumb {
+		border: 2px solid rgba(#fff, 0.25);
 		cursor: pointer;
-		height: 40px;
-		width: 40px;
+
+		&:hover {
+			border-color: rgba(#fff, 0.5);
+			border-color: $blue;
+		}
 	}
 }
 
@@ -305,33 +458,57 @@ select {
 		.thumb {
 			display: block;
 			margin: 0 auto;
-			max-height: calc(100vh - 180px);
-			max-height: calc(100vh - (40px + 115px + 100px + 40px )); // top padding + actions + thumbs + bottom padding
 			width: auto;
 		}
 	}
 
+	&.browse {
+
+		#browse {
+			display: block;
+		}
+
+		#share, #success {
+			display: none;
+		}
+
+		.img-main .thumb {
+			max-height: calc(100vh - #{(40px + 80px + 100px + 40px )}); // top padding + actions + thumbs + bottom padding
+		}
+	}
+
+	&.share {
+
+		#share {
+			display: block;
+		}
+
+		#browse, #success {
+			display: none;
+		}
+
+		.img-main .thumb {
+			max-height: calc(100vh - #{40px + 200px + 40px}); // top padding + share + bottom padding
+		}
+	}
+
+	&.success {
+
+		#success {
+			display: block;
+		}
+
+		#browse, #share {
+			display: none;
+		}
+
+		.img-main .thumb {
+			max-height: calc(100vh - #{40px + 230px + 40px}); // top padding + success + bottom padding
+		}
+	}
+
 	.actions {
-		align-items: center;
-		display: grid;
-		grid-column-gap: 20px;
-		grid-template-columns: 1fr 1fr;
-		margin: 40px 0 20px 0;
-		text-align: center;
-
-		.upload {
-
-		}
-
-		.download {
-
-		}
-
-		.terms {
-			grid-column-start: 1;
-			grid-column-end: 3;
-			text-align: left;
-		}
+		margin: 30px 0 20px 0;
 	}
 
 	.thumbs {
@@ -353,4 +530,29 @@ select {
 			}
 		}
 	}
+
+	label {
+		@extend .text-small;
+	}
+
+	.inline-items {
+
+		> * {
+			margin-right: 1em;
+			&:last-child {
+				margin-right: 0;
+			}
+		}
+
+		&.text-center {
+			margin-left: -0.5em;
+			margin-right: -0.5em;
+
+			> * {
+				margin-left: 0.5em;
+				margin-right: 0.5em;
+			}
+		}
+	}
+
 }
