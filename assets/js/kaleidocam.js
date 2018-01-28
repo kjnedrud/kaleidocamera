@@ -49,7 +49,7 @@ $(function() {
 	function getRadius() {
 		// make it fit within the screen
 		var wOffset = 20 + 20; // left padding + right padding
-		var hOffset = 45 + 60 + 20 + 80; // header + controls + padding + footer
+		var hOffset = 45 + 60 + 20 + 90; // header + controls + padding + footer
 		var w = window.innerWidth - wOffset;
 		var h = window.innerHeight - hOffset;
 		var r;

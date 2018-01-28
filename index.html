@@ -25,22 +25,25 @@
 		<div class="controls hidden">
 			<div class="container">
 
-				<input type="checkbox" id="rotate" /><label for="rotate">Rotate</label>
+				<div class="control">
+					<input type="checkbox" id="rotate" /><label for="rotate">Rotate</label>
+				</div>
 
-				<input type="range" id="sides" min="6" max="24" step="2" list="sides-list" value="6" style="margin-left:2em; max-width:320px; width:calc(100% - 120px); float:right;">
-
-				<datalist id="sides-list">
-					<option value="6" label="6">6</option>
-					<option value="8">8</option>
-					<option value="10">10</option>
-					<option value="12">12</option>
-					<option value="14">14</option>
-					<option value="16">16</option>
-					<option value="18">18</option>
-					<option value="20">20</option>
-					<option value="22">22</option>
-					<option value="24" label="24">24</option>
-				</datalist>
+				<div class="control">
+					<input type="range" id="sides" class="input-sides" min="6" max="24" step="2" list="sides-list" value="6" />
+					<datalist id="sides-list">
+						<option value="6" label="6">6</option>
+						<option value="8">8</option>
+						<option value="10">10</option>
+						<option value="12">12</option>
+						<option value="14">14</option>
+						<option value="16">16</option>
+						<option value="18">18</option>
+						<option value="20">20</option>
+						<option value="22">22</option>
+						<option value="24" label="24">24</option>
+					</datalist>
+				</div>
 
 			</div><!-- .container -->
 		</div><!-- .controls -->
@@ -49,7 +52,7 @@
 			<canvas class="circle hidden disabled" id="canvas"></canvas>
 			<div class="message">
 				<p><button id="start" class="big">Start</button></p>
-				<p id="fallback-message">
+				<p id="fallback-message" class="fallback-message">
 					Or upload an image:
 					<br>
 					<input type="file" accept="image/*;capture=camera" id="fallback-file">
@@ -60,24 +63,26 @@
 		<canvas id="src-canvas" style="display:none !important;"></canvas>
 		<video id="video" autoplay="true" style="display:none !important;"></video>
 
+		<div class="camera-controls hidden">
+			<div class="container">
+
+				<div class="sources">
+					<label for="fallback-file" class="control">[&uarr;]</label>
+					<div id="switch-camera" class="control hidden">[&uarr;&darr;]</div>
+				</div>
+
+				<div>
+					<button id="save" class="save"></button>
+				</div>
+
+				<div>
+					<div id="img-viewer-open" class="img-viewer-open"></div>
+				</div>
+
+			</div><!-- .container -->
+		</div><!-- .camera-controls -->
+
 	</div><!-- .main -->
-
-	<footer class="footer camera-controls hidden">
-		<div class="container">
-
-			<div class="sources">
-			</div>
-
-			<div>
-				<button id="save" class="save"></button>
-			</div>
-
-			<div>
-				<div id="img-viewer-open" class="img-viewer-open"></div>
-			</div>
-
-		</div>
-	</footer>
 
 	<!-- image viewer modal overlay -->
 	<div class="overlay hidden" id="img-viewer-overlay">
