@@ -11,10 +11,18 @@ $(function() {
 	var srcCanvas = document.getElementById('src-canvas');
 	var srcCtx = srcCanvas.getContext('2d');
 
-	// video element to use as source
-	var video = document.getElementById('video');
-	// var video = new Video();
+	// source - video or image
 	var source;
+
+	// keep track of available video input devices (cameras)
+	var cameras = [];
+	var cameraIndex = 0;
+	// video input constraints
+	var constraints = {
+		video: {
+			'facingMode': 'environment'
+		}
+	};
 
 	var dpr = window.devicePixelRatio || 1;
 
@@ -24,9 +32,15 @@ $(function() {
 	// triangle dimensions
 	var triangle = getTriangleDimensions(r, n);
 
-	// controls
+	// rotation
 	var rotate = document.getElementById('rotate');
 	var rotation = 0; // rotation in degrees
+	var rotationSpeed = 30; // degrees per second
+	var rotationInterval = 1000 / rotationSpeed; // milliseconds per degree of rotation
+	var rotationTime = 0; // time of last rotation
+
+	// keep track of requestAnimationFrame
+	var drawAnimation;
 
 	// imgur app client id - only thing required for anonymous uploads
 	var imgurClientId = '77b3d0df434b643';
@@ -108,7 +122,31 @@ $(function() {
 		}
 	}
 
+
 	// start video stream
+	function startVideo(constraints) {
+
+		if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+			navigator.mediaDevices.getUserMedia(constraints).then(userMediaSuccess).catch(userMediaFail);
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+
+	// stop video stream
+	function stopVideo(video) {
+		var stream = video.srcObject;
+		var tracks = stream.getTracks();
+		for (var i=0; i<tracks.length; i++) {
+			tracks[i].stop();
+		}
+	}
+
+
+	// start button
 	function start() {
 
 		// hide start button and file upload
@@ -117,26 +155,45 @@ $(function() {
 		// add loading message
 		$('.circle-wrap .message').append('<p class="loading">Loading...</p>');
 
-		var constraints = {
-			video: {
-				'facingMode': 'environment'
+		// start video stream
+		if (startVideo(constraints)) {
+			// check for multiple cameras and enable switching between them
+			if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+				navigator.mediaDevices.enumerateDevices().then(getCameras).catch(getCamerasFail);
 			}
-		};
-
-		if (navigator.mediaDevices.getUserMedia) {
-			navigator.mediaDevices.getUserMedia(constraints).then(userMediaSuccess).catch(userMediaFail);
 		}
+		// unsupported
 		else {
 			// remove loading message, add error message, and show fallback file input
 			$('.loading').remove();
 			$('.circle-wrap .message').prepend('<p class="error">Sorry, your browser is not supported. Try using the latest version of Chrome, Firefox, Safari, or Edge.</p>');
 			$('#fallback-message').removeClass('hidden');
 		}
+
+	}
+
+	// stop animation and video stream
+	function stop() {
+
+		if (source.nodeName.toLowerCase() == 'video') {
+			// stop video stream
+			stopVideo(source);
+		}
+
+		// stop animation
+		cancelAnimationFrame(drawAnimation);
 	}
 
 
 	// success callback for getUserMedia
 	function userMediaSuccess(stream) {
+		// create video element and use as source
+		var video = document.createElement('video');
+		video.onloadeddata = function(e) {
+			source = video;
+			video.play();
+			sourceLoaded();
+		};
 		video.srcObject = stream;
 	}
 
@@ -147,6 +204,46 @@ $(function() {
 		$('.loading').remove();
 		$('.circle-wrap .message').prepend('<p class="error">Camera access is required. Please check your device and browser permissions.</p>');
 		$('#fallback-message').removeClass('hidden');
+	}
+
+
+	// switch input camera
+	function switchCamera() {
+
+		// cycle through cameras
+		cameraIndex++;
+		if (cameraIndex >= cameras.length) {
+			cameraIndex = 0;
+		}
+		// set contraints to use next camera id
+		constraints.video.deviceId = {exact: cameras[cameraIndex].deviceId};
+
+		// start video
+		startVideo(constraints);
+	}
+
+
+	// success callback for enumerateDevices
+	function getCameras(devices) {
+
+		// get a list of all video input devices (cameras)
+		for (var i=0; i<devices.length; i++) {
+			if (devices[i].kind == 'videoinput') {
+				cameras.push(devices[i]);
+			}
+		}
+
+		// more than 1 camera detected
+		if (cameras.length > 1) {
+			// enable camera switching
+			$('#switch-camera').removeClass('hidden').on('click', switchCamera);
+		}
+	}
+
+
+	// error callback for enumerateDevices
+	function getCamerasFail(error) {
+		console.log(error);
 	}
 
 
@@ -163,8 +260,8 @@ $(function() {
 			// when file is loaded
 			fr.onload = function(e){
 
-				// create new image and use as source
-				var img = new Image();
+				// create image element and use as source
+				var img = document.createElement('img');
 				img.onload = function(e){
 					source = img;
 					sourceLoaded();
@@ -175,6 +272,34 @@ $(function() {
 			// read file
 			fr.readAsDataURL(file);
 		}
+	}
+
+	// draw frames to canvas
+	function draw() {
+
+		if (rotate.checked) {
+
+			// check how long since last rotation
+			var now = performance.now();
+			var elapsed = now - rotationTime;
+
+			// if enough time has elapsed since previous rotation, increment rotation
+			if (elapsed >= rotationInterval) {
+
+				// update rotation time
+				rotationTime = now;
+
+				// increment rotation
+				rotation++;
+			}
+		}
+
+		// draw source
+		drawSource();
+
+		// draw kaleidoscope
+		drawKaleidoscope();
+
 	}
 
 
@@ -195,22 +320,8 @@ $(function() {
 
 		var srcSize = getSourceDimensions(source);
 
-		// todo: change to requestAnimationFrame
-		// draw video frames on source canvas
-		setInterval(function() {
-
-			// draw source
-			drawSource();
-
-			// draw kaleidoscope
-			drawKaleidoscope();
-
-			// increment rotation
-			if (rotate.checked) {
-				rotation++;
-			}
-
-		}, 1000/30);
+		// start drawing to canvas
+		drawAnimation = requestAnimationFrame(draw);
 	}
 
 
@@ -262,9 +373,11 @@ $(function() {
 		srcCtx.save();
 
 		// translate to set rotation point in center, then translate back
-		srcCtx.translate(triangle.h/2, triangle.h/2);
-		srcCtx.rotate(rotation * Math.PI/180); // convert degrees to radians
-		srcCtx.translate(-triangle.h/2,-triangle.h/2);
+		if (rotation > 0) {
+			srcCtx.translate(triangle.h/2, triangle.h/2);
+			srcCtx.rotate(rotation * Math.PI/180); // convert degrees to radians
+			srcCtx.translate(-triangle.h/2,-triangle.h/2);
+		}
 
 		// this works to crop, center image, and rotate around the center
 		srcCtx.drawImage(
@@ -371,13 +484,6 @@ $(function() {
 	// fallback file upload
 	$('#fallback-file').on('change', fileUpload);
 
-	// video loaded
-	$('#video').on('loadeddata', function() {
-		source = video;
-		video.play();
-		sourceLoaded();
-	});
-
 	//change the number of sides
 	$('#sides').change(function() {
 
@@ -390,7 +496,6 @@ $(function() {
 			triangle = getTriangleDimensions(r, n);
 		}
 	});
-
 
 	// show image viewer modal
 	$('body').on('click', '#img-viewer-open .thumb', function(){
