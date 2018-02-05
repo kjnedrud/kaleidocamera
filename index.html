@@ -26,10 +26,35 @@
 			<div class="container">
 
 				<div class="control">
-					<input type="checkbox" id="rotate" /><label for="rotate">Rotate</label>
+					<input type="checkbox" id="rotate" class="toggle" />
+					<label for="rotate" title="Animate Rotation">
+						<span class="icon">
+							<svg class="svg-icon" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg" width="30" height="30">
+								<defs>
+									<!-- define arrow marker to be reused on multiple svg icons -->
+									<marker id="arrow" viewBox="0 0 5 7" markerWidth="5" markerHeight="8" refX="2.5" refY="3.5" orient="auto">
+										<path d="M1,1 L3.5,3.5 L1,6" stroke-width="1" stroke-linejoin="miter" />
+									</marker>
+								</defs>
+								<path d="M22.939,21.894c-2.018,2.507-5.11,4.111-8.579,4.111C8.283,26.005,3.356,21.077,3.356,15c0-6.078,4.927-11.005,11.005-11.005c4.417,0,8.224,2.601,9.977,6.354" stroke-width="2" stroke-dasharray="4,4,4,4,4,4,36,4" marker-end="url(#arrow)" />
+							</svg>
+							Rotate
+						</span>
+					</label>
 				</div>
 
 				<div class="control">
+					<label for="sides" class="icon" title="Number of Segments">
+						<svg class="svg-icon" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg" width="30" height="30">
+							<g>
+								<circle cx="15" cy="15" r="12"></circle>
+								<line x1="3" y1="15" x2="27" y2="15" stroke-width="1.5" />
+								<line x1="9" y1="4.608" x2="21" y2="25.392" stroke-width="1.5" />
+								<line x1="9" y2="4.608" x2="21" y1="25.392" stroke-width="1.5" />
+							</g>
+						</svg>
+						Number of Segments
+					</label>
 					<input type="range" id="sides" class="input-sides" min="6" max="24" step="2" list="sides-list" value="6" />
 					<datalist id="sides-list">
 						<option value="6" label="6">6</option>
@@ -48,14 +73,15 @@
 			</div><!-- .container -->
 		</div><!-- .controls -->
 
-		<div class="circle-wrap">
-			<canvas class="circle hidden disabled" id="canvas"></canvas>
+		<div class="circle-wrap hidden">
+			<canvas class="circle disabled" id="canvas"></canvas>
 			<div class="message">
 				<p><button id="start" class="big">Start</button></p>
 				<p id="fallback-message" class="fallback-message">
-					Or upload an image:
+					or
 					<br>
 					<input type="file" accept="image/*;capture=camera" id="fallback-file">
+					<label for="fallback-file">Upload an Image</label>
 				</p>
 			</div>
 		</div>
@@ -66,8 +92,25 @@
 			<div class="container">
 
 				<div class="sources">
-					<label for="fallback-file" class="control">[&uarr;]</label>
-					<div id="switch-camera" class="control hidden">[&uarr;&darr;]</div>
+					<label for="fallback-file" class="control icon" title="Upload Image" tabindex="0">
+						<svg class="svg-icon" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg" width="30" height="30">
+							<g>
+								<line x1="15" y1="20" x2="15" y2="5" marker-end="url(#arrow)" />
+								<path d="M3,22 L3,27 L27,27 L27,22" />
+							</g>
+						</svg>
+						Upload Image
+					</label>
+					<div id="switch-camera" class="control icon hidden" title="Switch Camera">
+						<svg class="svg-icon" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg" width="30" height="30">
+							<g>
+								<path d="M28,15 L28,5 L3,5" marker-end="url(#arrow)" />
+								<path d="M2,15 L2,25 L27,25" marker-end="url(#arrow)" />
+								<circle cx="15" cy="15" r="5" />
+							</g>
+						</svg>
+						Switch Camera
+					</div>
 				</div>
 
 				<div>
@@ -88,12 +131,20 @@
 		<div class="container">
 			<div class="modal img-viewer browse">
 
-				<a href="#" class="close" title="Close">Close</a>
+				<a href="#" class="close" title="Close">
+					<svg class="svg-icon" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg" width="30" height="30">
+						<g>
+							<line x1="8" y1="8" x2="22" y2="22" />
+							<line x1="22" y1="8" x2="8" y2="22" />
+						</g>
+					</svg>
+					Close
+				</a>
 
 				<div id="img-main" class="img-main"></div>
 
 				<!-- step 1: browse -->
-				<div id="browse">
+				<div id="browse" class="step-browse">
 
 					<div class="actions inline-items text-center">
 
@@ -108,7 +159,7 @@
 				</div><!-- #browse -->
 
 				<!-- step 2: share -->
-				<div id="share">
+				<div id="share" class="step-share">
 
 					<p class="inline-items">
 						<b>Upload to Imgur</b>
@@ -129,7 +180,7 @@
 				</div><!-- #share -->
 
 				<!-- step 3: success -->
-				<div id="success">
+				<div id="success" class="step-success">
 
 					<p><b>Upload Complete</b></p>
 

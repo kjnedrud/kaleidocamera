@@ -1,16 +1,24 @@
-
+// units & sizes
 $base-size: 20px;
 $line-height: 1.5;
 
+// colors
 $blue: #38a1d1;
+$blue-light: mix(#fff, $blue, 20%);
+$blue-eggshell: mix(#fff, $blue, 50%);
 $blue-grey: #2e3c61;
 $red: #c11955;
 
+// symbols
 $arrow-up: '\2191';
 $arrow-down: '\2193';
 $arrow-left: '\2190';
 $arrow-right: '\2192';
 $x: '\2715';
+
+/**
+ * General Styles
+ */
 
 html, body {
 	background: #161616;
@@ -44,7 +52,7 @@ a {
 	text-decoration: underline;
 
 	&:focus, &:hover {
-		color: mix(#fff, $blue, 20%);
+		color: $blue-light;
 		text-decoration: underline;
 	}
 
@@ -155,6 +163,10 @@ p {
 	font-size: 16px;
 }
 
+/**
+ * Header
+ */
+
 .header {
 	background: rgba($blue-grey, 0.5);
 	border-bottom: 1px solid $blue-grey;
@@ -168,23 +180,9 @@ p {
 	}
 }
 
-.controls {
-	height: 40px;
-	text-align: left;
-	padding: 10px 0;
-	white-space: nowrap;
-
-	.container {
-		display: grid;
-		grid-column-gap: 20px;
-		grid-template-columns: 1fr 3fr;
-		justify-content: space-evenly;
-	}
-}
-
-.control {
-	min-width: 40px;
-}
+/**
+ * Main Content Area
+ */
 
 .main {
 	display: flex;
@@ -193,62 +191,45 @@ p {
 	text-align: center;
 }
 
-.camera-controls {
-	padding: 20px 0 10px 0;
-	text-align: center;
-
-	.container {
-		align-items: center;
-		display: grid;
-		grid-column-gap: 15px;
-		grid-template-columns: 2fr 1fr 2fr;
-		justify-content: space-evenly;
-		text-align: center;
-	}
-}
-
-.sources {
-	display: grid;
-	grid-column-gap: 15px;
-	grid-template-columns: repeat(auto-fit, minmax(40px, 0.5fr));
-	justify-content: space-evenly;
-	text-align: left;
-}
-
-.save {
-	background: rgba(#fff, 0.2);
-	border: 3px solid #ccc;
-	border-radius: 50%;
-	height: 60px;
-	margin: 0 auto;
-	width: 60px;
-
-	&:focus {
-		box-shadow: 0 0 2px 5px rgba($blue, 0.5);
-		outline: none;
-	}
-}
-
 .circle-wrap {
 	position: relative;
 
 	.message {
 		box-sizing: border-box;
 		display: block;
+		left: 50%;
+		max-width: 100%;
 		padding: 0 2em;
 		position: absolute;
 		text-align: center;
 		top: 50%;
-		transform: translate(0, -50%);
-		width: 100%;
+		transform: translate(-50%, -50%);
+		width: 360px;
 
 		.error {
 			margin: 1em auto;
 			width: 220px;
 		}
 
-		.fallback-message {
-			margin-top: 2em;
+		input[type="file"] {
+			left: -9999px;
+			position: absolute;
+			visibility: hidden;
+
+			+ label {
+				border: 2px dashed #999;
+				box-sizing: border-box;
+				cursor: pointer;
+				display: inline-block;
+				margin: 1em auto;
+				padding: 0.5em 1.5em;
+				width: 100%;
+
+				&:hover {
+					border-color: $blue;
+					color: #fff;
+				}
+			}
 		}
 	}
 }
@@ -271,6 +252,58 @@ p {
 	}
 }
 
+// controls (top)
+.controls {
+	height: 40px;
+	text-align: left;
+	padding: 10px 0;
+	white-space: nowrap;
+
+	.container {
+		display: grid;
+		grid-column-gap: 20px;
+		grid-template-columns: 1fr 3fr;
+		justify-content: space-evenly;
+	}
+}
+
+// camera controls (bottom)
+.camera-controls {
+	padding: 20px 0;
+
+	.container {
+		align-items: center;
+		display: grid;
+		grid-column-gap: 15px;
+		grid-template-columns: 2fr 1fr 2fr;
+		justify-content: space-evenly;
+	}
+}
+
+.sources {
+	display: grid;
+	grid-column-gap: 15px;
+	grid-template-columns: repeat(auto-fill, 40px);
+}
+
+.save {
+	background: rgba(#fff, 0.2);
+	border: 3px solid #ccc;
+	border-radius: 50%;
+	height: 60px;
+	margin: 0 auto;
+	width: 60px;
+
+	&:hover {
+		border-color: #fff;
+	}
+
+	&:focus {
+		box-shadow: 0 0 2px 5px rgba($blue, 0.5);
+		outline: none;
+	}
+}
+
 .error {
 	background: rgba(#600, 0.5);
 	border: 1px solid #600;
@@ -282,8 +315,7 @@ p {
  */
 
 %button {
-	background: $blue;
-	background: mix(#fff, $blue, 20%);
+	background: $blue-light;
 	border: 0;
 	border-radius: 2px;
 	box-sizing: border-box;
@@ -304,7 +336,6 @@ p {
 		text-decoration: none;
 
 		&:not([disabled]), &:not(.disabled) {
-			background: mix(#fff, $blue, 20%);
 			background: $blue;
 		}
 	}
@@ -317,8 +348,8 @@ p {
 	&.big {
 		font-size: $base-size * 1.5;
 		font-size: 1.5rem;
-		min-width: 6em;
 		padding: 0.25em 1em;
+		width: 100%;
 	}
 
 	&.loading {
@@ -388,9 +419,216 @@ input[type=checkbox], input[type=radio] {
 	margin: 0.5em;
 }
 
+// toggle checkbox
+.toggle {
+	left: -9999px;
+	position: absolute;
+	visibility: hidden;
+
+	+ label {
+		cursor: pointer;
+		display: inline-block;
+		height: 40px;
+		padding-right: 35px;
+		position: relative;
+
+		&:before {
+			background: #666;
+			background: #999;
+			border-radius: 7.5px;
+			content: '';
+			display: block;
+			height: 15px;
+			position: absolute;
+			top: 12.5px;
+			right: 0;
+			width: 30px;
+		}
+
+		&:after {
+			background: #ccc;
+			background: #fff;
+			border-radius: 50%;
+			box-shadow: 0px 2px 2px rgba(#000, 0.2);
+			content: '';
+			display: block;
+			height: 18px;
+			position: absolute;
+			right: 15px;
+			top: 11px;
+			width: 18px;
+		}
+	}
+
+	&:checked {
+		+ label {
+
+			&:before {
+				background: $blue-eggshell;
+			}
+
+			&:after {
+				background: $blue;
+				box-shadow: 0px 1px 2px rgba(#000, 0.5);
+				right: 0px;
+			}
+
+		}
+	}
+}
+
 label {
 	font-weight: 700;
 }
+
+.icon {
+	box-sizing: border-box;
+	cursor: pointer;
+	display: inline-block;
+	height: 40px;
+	overflow: hidden;
+	width: 40px;
+}
+
+.svg-icon {
+	fill: none;
+	padding: 5px;
+	stroke: #ccc;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	stroke-width: 1.5;
+	stroke-width: 2;
+
+	&:hover {
+		cursor: pointer;
+	}
+}
+
+.camera-controls .svg-icon {
+	&:hover {
+		stroke: #fff;
+	}
+}
+
+// custom range input
+// note: each vendor-prefixed selector must be declared separately (otherwise browsers will ignore the entire block)
+
+$range-option-count: 10;
+$range-option-percent: 100% / ($range-option-count - 1);
+$range-background-color: #999;
+$range-background-color-focus: $blue-eggshell;
+$range-hash-color: $blue;
+
+@mixin range-thumb {
+	background: #ccc;
+	background: #fff;
+	border: 0;
+	border-radius: 50%;
+	box-shadow: 0px 2px 2px rgba(#000, 0.5);
+	height: 18px;
+	margin-top: -8px;
+	transition: background 200ms, box-shadow 200ms;
+	width: 18px;
+}
+
+@mixin range-thumb-focus {
+	background: $blue;
+	box-shadow: 0px 2px 2px rgba(#000, 0.5);
+	box-shadow: 0px 1px 2px rgba(#000, 0.5), 0 0 0 10px rgba($blue, 0.25);
+}
+
+@mixin range-track {
+	background-color: $range-background-color;
+	background-repeat: repeat-x;
+	border-color: $range-background-color;
+	border-radius: 3px;
+	border-style: solid;
+	border-width: 1px 0;
+	height: 4px;
+	transition: background 200ms, border 200ms, box-shadow 200ms;
+	width: 100%;
+}
+
+@mixin range-track-focus {
+	background-color: $blue-eggshell;
+	// use background gradient to add hash marks
+	background-image: repeating-linear-gradient(
+		to right,
+		$range-hash-color,
+		$range-hash-color 2px,
+		transparent 2px,
+		transparent $range-option-percent
+	);
+	background-position: -1px 50%;
+	border-color: $blue-eggshell;
+	box-shadow: 0 0 0 1px $blue-eggshell;
+}
+
+input[type=range] {
+	-webkit-appearance: none;
+	background: none;
+	border: 0;
+	box-sizing: border-box;
+	cursor: pointer;
+	height: 40px;
+	margin: 0;
+	padding: 10px 0;
+	width: 100%;
+
+	// thumb
+	&::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		@include range-thumb;
+	}
+	&::-moz-range-thumb {
+		@include range-thumb;
+	}
+	&::-ms-thumb {
+		@include range-thumb;
+	}
+
+	// track
+	&::-webkit-slider-runnable-track {
+		@include range-track;
+	}
+	&::-moz-range-track {
+		@include range-track;
+	}
+	&::-ms-range-track {
+		@include range-track;
+	}
+
+	&:focus {
+		outline: none;
+
+		&::-webkit-slider-thumb {
+			@include range-thumb-focus;
+		}
+		&::-moz-range-thumb {
+			@include range-thumb-focus;
+		}
+		&::-ms-thumb {
+			@include range-thumb-focus;
+		}
+
+		&::-webkit-slider-runnable-track {
+			@include range-track-focus;
+		}
+		&::-moz-range-track {
+			@include range-track-focus;
+		}
+		&::-ms-range-track {
+			@include range-track-focus;
+		}
+	}
+
+	&.input-sides {
+		float: right;
+		width: calc(100% - 40px);
+	}
+
+}
+
 
 /**
  * Modal Overlay
@@ -407,13 +645,17 @@ label {
 	width: 100%;
 	z-index: 100;
 
+	.container {
+		padding: 0;
+	}
+
 	.modal {
 		background: #333;
 		box-sizing: border-box;
-		margin-top: 20px;
-		max-height: calc(100vh - 40px);
+		height: 100vh;
+		margin: 0;
 		overflow-y: auto;
-		padding: 20px;
+		padding: 30px;
 		position: relative;
 
 		.close {
@@ -422,24 +664,20 @@ label {
 			height: 40px;
 			overflow: hidden;
 			position: absolute;
-			right: 0px;
+			right: 5px;
 			text-decoration: none;
-			top: 0px;
+			top: 5px;
 			width: 40px;
 
 			&:hover {
 				color: #fff;
 				text-decoration: none;
+
+				.svg-icon {
+					stroke: #fff;
+				}
 			}
 
-			&::before {
-				content: $x;
-				display: block;
-				height: 20px;
-				padding: 10px;
-				text-align: center;
-				width: 20px;
-			}
 		}
 	}
 }
@@ -451,8 +689,8 @@ label {
 .img-viewer-open {
 	background: rgba(#333, 0.5);
 	border-radius: 50%;
+	float: right;
 	height: 44px; // 40 thumb + 4 border
-	margin: 0 auto;
 	width: 44px; // 40 thumb + 4 border
 
 	.thumb {
@@ -491,7 +729,7 @@ label {
 		}
 
 		.img-main .thumb {
-			max-height: calc(100vh - #{(40px + 80px + 100px + 40px )}); // top padding + actions + thumbs + bottom padding
+			max-height: calc(100vh - #{(30px + 90px + 140px + 30px )}); // top padding + actions + thumbs + bottom padding
 		}
 	}
 
@@ -506,7 +744,7 @@ label {
 		}
 
 		.img-main .thumb {
-			max-height: calc(100vh - #{40px + 200px + 40px}); // top padding + share + bottom padding
+			max-height: calc(100vh - #{30px + 200px + 30px}); // top padding + share + bottom padding
 		}
 	}
 
@@ -521,24 +759,33 @@ label {
 		}
 
 		.img-main .thumb {
-			max-height: calc(100vh - #{40px + 230px + 40px}); // top padding + success + bottom padding
+			max-height: calc(100vh - #{30px + 230px + 30px}); // top padding + success + bottom padding
 		}
 	}
 
 	.actions {
-		margin: 30px 0 20px 0;
+		margin: 30px 0;
+	}
+
+	.step-browse {
+		flex-grow: 1;
+		position: relative;
+		min-height: 160px;
 	}
 
 	.thumbs {
+		box-sizing: border-box;
 		display: grid;
 		flex-grow: 1;
 		grid-gap: 20px;
 		grid-template-columns: repeat(auto-fit, minmax(40px, 0.25fr));
 		justify-content: space-evenly;
-		margin: -5px; // cancel out padding
 		padding: 5px; // extra padding so shadow on active thumb does not get cut off
-		min-height: 80px;
+		max-height: calc(100% - 90px); // step-browse height - 80px actions
+		min-height: 140px; // 2.5 rows (40 row + 20 gap + 40 row + 20 gap + 20 half row)
 		overflow-y: auto;
+		position: absolute;
+		width: 100%;
 
 		.thumb {
 			cursor: pointer;

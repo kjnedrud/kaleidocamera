@@ -57,13 +57,13 @@ $(function() {
 	}
 
 	// show canvas once the dimensions are set
-	$('#canvas').removeClass('hidden');
+	$('.circle-wrap').removeClass('hidden');
 
 	// calculate radius of circle
 	function getRadius() {
 		// make it fit within the screen
 		var wOffset = 20 + 20; // left padding + right padding
-		var hOffset = 45 + 60 + 20 + 90; // header + controls + padding + footer
+		var hOffset = 45 + 60 + 100; // header + controls + video controls
 		var w = window.innerWidth - wOffset;
 		var h = window.innerHeight - hOffset;
 		var r;
