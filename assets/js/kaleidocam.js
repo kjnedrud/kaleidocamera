@@ -340,7 +340,7 @@ $(function() {
 			if (elapsed >= rotationInterval) {
 
 				// update rotation time
-				rotationTime = now;
+				rotationTime = now - (elapsed % rotationInterval);
 
 				// increment rotation
 				rotation++;
@@ -352,6 +352,9 @@ $(function() {
 
 		// draw kaleidoscope
 		drawKaleidoscope();
+
+		// request next frame
+		drawAnimation = requestAnimationFrame(draw);
 
 	}
 
