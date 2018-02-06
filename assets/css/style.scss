@@ -192,6 +192,7 @@ p {
 }
 
 .circle-wrap {
+	padding: 0 20px;
 	position: relative;
 
 	.message {
@@ -305,8 +306,9 @@ p {
 }
 
 .error {
-	background: rgba(#600, 0.5);
-	border: 1px solid #600;
+	background: rgba(mix(#000, $red, 50%), 0.75);
+	border: 1px solid $red;
+	color: mix(#fff, $red, 80%);
 	padding: 0.5em;
 }
 
@@ -626,7 +628,10 @@ input[type=range] {
 		float: right;
 		width: calc(100% - 40px);
 	}
+}
 
+.icon[for='sides'] {
+	float: left;
 }
 
 
@@ -713,6 +718,8 @@ input[type=range] {
 
 		.thumb {
 			display: block;
+			min-height: 100px;
+			min-width: 100px;
 			margin: 0 auto;
 			width: auto;
 		}

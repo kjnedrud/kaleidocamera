@@ -16,7 +16,7 @@ $(function() {
 
 	// keep track of available video input devices (cameras)
 	var cameras = [];
-	var cameraIndex = 0;
+	var cameraIndex = -1;
 	// video input constraints
 	var constraints = {
 		video: {
@@ -123,6 +123,23 @@ $(function() {
 	}
 
 
+	// source loading
+	function sourceLoading() {
+		// if current source is video
+		if (typeof source != 'undefined' && source.nodeName.toLowerCase() == 'video') {
+			// stop video stream
+			stopVideo(source);
+		}
+
+		// reset any old loading/error messages
+		$('.circle-wrap .message').find('.loading, .error').remove();
+		// hide start button and fallback message
+		$('.circle-wrap .message').find('.start, .fallback-message').addClass('hidden');
+		// show loading message
+		$('.circle-wrap .message').removeClass('hidden').append('<p class="loading">Loading...</p>')
+	}
+
+
 	// start video stream
 	function startVideo(constraints) {
 
@@ -149,11 +166,8 @@ $(function() {
 	// start button
 	function start() {
 
-		// hide start button and file upload
-		$('#start, #fallback-message').addClass('hidden');
-
-		// add loading message
-		$('.circle-wrap .message').append('<p class="loading">Loading...</p>');
+		// set source to loading
+		sourceLoading();
 
 		// start video stream
 		if (startVideo(constraints)) {
@@ -167,7 +181,7 @@ $(function() {
 			// remove loading message, add error message, and show fallback file input
 			$('.loading').remove();
 			$('.circle-wrap .message').prepend('<p class="error">Sorry, your browser is not supported. Try using the latest version of Chrome, Firefox, Safari, or Edge.</p>');
-			$('#fallback-message').removeClass('hidden');
+			$('.fallback-message').removeClass('hidden');
 		}
 
 	}
@@ -185,12 +199,34 @@ $(function() {
 	}
 
 
+	// set cameraIndex to current video device
+	function setCameraIndex(stream) {
+		var tracks = stream.getTracks();
+		var track = tracks[0];
+		// loop through cameras looking device that matches current video track's deviceId
+		for (var i=0; i<cameras.length; i++) {
+			if (cameras[i].deviceId == track.getSettings().deviceId) {
+				cameraIndex = i;
+			}
+		}
+	}
+
+
 	// success callback for getUserMedia
 	function userMediaSuccess(stream) {
+
 		// create video element and use as source
 		var video = document.createElement('video');
 		video.onloadeddata = function(e) {
+
+			// update source
 			source = video;
+
+			// make sure camera index is set
+			if (cameraIndex < 0 && cameras.length > 1) {
+				setCameraIndex(stream);
+			}
+
 			video.play();
 			sourceLoaded();
 		};
@@ -203,19 +239,23 @@ $(function() {
 		// remove loading message, add error message, and show fallback file input
 		$('.loading').remove();
 		$('.circle-wrap .message').prepend('<p class="error">Camera access is required. Please check your device and browser permissions.</p>');
-		$('#fallback-message').removeClass('hidden');
+		$('.fallback-message').removeClass('hidden');
 	}
 
 
 	// switch input camera
-	function switchCamera() {
+	function switchCamera(e) {
+
+		// set source to loading
+		sourceLoading();
 
 		// cycle through cameras
 		cameraIndex++;
 		if (cameraIndex >= cameras.length) {
 			cameraIndex = 0;
 		}
-		// set contraints to use next camera id
+
+		// update contraints to use next camera id
 		constraints.video.deviceId = {exact: cameras[cameraIndex].deviceId};
 
 		// start video
@@ -235,6 +275,11 @@ $(function() {
 
 		// more than 1 camera detected
 		if (cameras.length > 1) {
+			// make sure camera index is set
+			if (cameraIndex < 0 && typeof source != 'undefined' && source.nodeName.toLowerCase() == 'video') {
+				var stream = source.srcObject;
+				setCameraIndex(stream);
+			}
 			// enable camera switching
 			$('#switch-camera').removeClass('hidden').on('click', switchCamera);
 		}
@@ -249,11 +294,15 @@ $(function() {
 
 	// fallback file upload
 	function fileUpload(e) {
+
+		// set source to loading
+		sourceLoading();
+
 		// get file
 		var file = e.target.files[0];
 
 		// make sure file is an image
-		if (file.type.match('image.*')) {
+		if (typeof file != 'undefined' && file.type.match(/image\/(jp(e)?g|png|gif)/g)) {
 
 			var fr = new FileReader();
 
@@ -272,7 +321,11 @@ $(function() {
 			// read file
 			fr.readAsDataURL(file);
 		}
+		else {
+			$('.circle-wrap .message').append('<p class="error">Please upload a valid JPG, PNG, or GIF file.</p>');
+		}
 	}
+
 
 	// draw frames to canvas
 	function draw() {
@@ -309,8 +362,9 @@ $(function() {
 		// clip canvas to a circle
 		circleClip();
 
-		// hide messages and remove loading and error elements
-		$('.circle-wrap .message').addClass('hidden').find('.loading, .error').remove();
+		// hide messages and remove start button, loading, and error elements
+		$('.circle-wrap .message').addClass('hidden').find('.start, .loading, .error').remove();
+		$('.fallback-message').addClass('hidden');
 
 		// enable clicking canvas to save images
 		$('#canvas').removeClass('disabled').attr('title', 'Tap or click anywhere in the circle to take a picture.');
