@@ -186,16 +186,29 @@ $(function() {
 
 	}
 
-	// stop animation and video stream
-	function stop() {
-
+	// pause animation and video stream
+	function pause() {
 		if (source.nodeName.toLowerCase() == 'video') {
 			// stop video stream
 			stopVideo(source);
 		}
-
-		// stop animation
+		// pause animation
 		cancelAnimationFrame(drawAnimation);
+	}
+
+
+	// restart paused animation and video stream
+	function restart() {
+		if (source.nodeName.toLowerCase() == 'video') {
+			// set source to loading
+			sourceLoading();
+			// start video stream
+			startVideo(constraints);
+		}
+		else {
+			// restart animation
+			drawAnimation = requestAnimationFrame(draw);
+		}
 	}
 
 
@@ -377,6 +390,8 @@ $(function() {
 
 		var srcSize = getSourceDimensions(source);
 
+		// cancel old draw animation request
+		cancelAnimationFrame(drawAnimation);
 		// start drawing to canvas
 		drawAnimation = requestAnimationFrame(draw);
 	}
@@ -535,13 +550,39 @@ $(function() {
 	}
 
 
-	// start button
+	// show modal overlay
+	function showOverlay($overlay) {
+		// show overlay
+		$overlay.removeClass('hidden');
+		// disable scrolling
+		$('body').addClass('no-scroll');
+		// pause video / animation
+		pause();
+	}
+
+
+	// hide modal overlay
+	function hideOverlay($overlay) {
+		// hide overlay
+		$overlay.addClass('hidden');
+		// enable scrolling
+		$('body').removeClass('no-scroll');
+		// restart video / animation
+		restart();
+	}
+
+
+	/**
+	 * Event Handlers
+	 */
+
+	// start button click
 	$('#start').on('click', start);
 
 	// fallback file upload
 	$('#fallback-file').on('change', fileUpload);
 
-	//change the number of sides
+	// change number of sides
 	$('#sides').change(function() {
 
 		var numSides = $('#sides').val();
@@ -554,36 +595,32 @@ $(function() {
 		}
 	});
 
-	// show image viewer modal
+	// image viewer click - show modal overlay
 	$('body').on('click', '#img-viewer-open .thumb', function(){
 		// make sure browse step is visible
 		$('.img-viewer').removeClass('share success').addClass('browse');
-		// show modal
-		$('#img-viewer-overlay').removeClass('hidden');
-		// disable scrolling
-		$('body').addClass('no-scroll');
+		// show overlay
+		showOverlay($('#img-viewer-overlay'));
 	});
 
 	// save images from canvas
 	$('body').on('click', '#canvas:not(.disabled), #save', saveImage);
 
-	// view a thumbnail
+	// thumbnail click - update active image
 	$('body').on('click', '#thumbs .thumb', function(){
 		setActiveImage($(this));
 	});
 
-	// hide image viewer modal
+	// overlay click - hide modal overlay
 	$('.overlay').click(function(e){
 		if (e.target == e.currentTarget) {
-			$(this).addClass('hidden');
-			$('body').removeClass('no-scroll');
+			hideOverlay($(this));
 		}
 	});
 
-	// close
+	// close icon click - hide modal overlay
 	$('.overlay .close').click(function(e){
-		$(this).closest('.overlay').addClass('hidden');
-		$('body').removeClass('no-scroll');
+		hideOverlay($(this).closest('.overlay'));
 	})
 
 	// share step
