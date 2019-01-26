@@ -240,10 +240,11 @@ $(function() {
 				setCameraIndex(stream);
 			}
 
-			video.play();
 			sourceLoaded();
 		};
+
 		video.srcObject = stream;
+		video.play();
 	}
 
 
